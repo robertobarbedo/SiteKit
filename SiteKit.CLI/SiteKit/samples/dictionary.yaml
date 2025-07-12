@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/sitecore_yaml_config/refs/heads/main/schemas/dictionary-schema.json
+dictionary:
+  entries:
+    - Key: welcome
+      Phrase: "Welcome to MySite"
+    - Key: sign_in
+      Phrase: "Sign In:"
+    - Key: sign_out
+      Phrase: "Sign Out:"

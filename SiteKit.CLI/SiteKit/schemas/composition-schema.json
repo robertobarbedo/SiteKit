@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "composition": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Component names - can be any text/mixed case"
+            }
+          },
+          "description": "Groups with any names containing arrays of component names"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Group names - can be any text/mixed case"
+              }
+            },
+            "description": "Page type with any placeholder names containing arrays of group names"
+          },
+          "description": "Page types (free text names) with any placeholder names"
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Group names - can be any text/mixed case"
+              }
+            },
+            "description": "Component with any placeholder names containing arrays of group names"
+          },
+          "description": "Components (free text names) with any placeholder names"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Root composition object containing optional groups, pages, and components"
+    }
+  },
+  "required": ["composition"],
+  "additionalProperties": false,
+  "title": "Sitecore Composition Configuration Schema",
+  "description": "Schema for Sitecore composition configuration files defining groups, pages, and components with their placeholder relationships"
+} 

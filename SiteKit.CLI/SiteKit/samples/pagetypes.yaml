@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/sitecore_yaml_config/refs/heads/main/schemas/pagetypes-schema.json
+pagetypes:
+  - name: Content Page
+    fields:
+      - name: Heading
+        type: Single-Line Text
+      - name: Text
+        type: Rich Text
+    

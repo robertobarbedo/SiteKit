@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PlatformVersion>1.*</PlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Sitecore.XmCloud.Kernel" Version="$(PlatformVersion)" />
+    <PackageReference Update="Sitecore.XmCloud.ContentSearch" Version="$(PlatformVersion)" />
+    <PackageReference Update="Sitecore.XmCloud.ContentSearch.Linq" Version="$(PlatformVersion)" />
+    <PackageReference Update="Sitecore.XmCloud.LayoutService" Version="$(PlatformVersion)" />
+    <PackageReference Update="Sitecore.XmCloud.Assemblies" Version="$(PlatformVersion)" />
+    <!--<PackageReference Update="Sitecore.Assemblies.SitecoreHeadlessServicesServer" Version="19.*" />-->
+  	<PackageReference Update="YamlDotNet" Version="13.1.1" />
+  </ItemGroup>
+</Project>

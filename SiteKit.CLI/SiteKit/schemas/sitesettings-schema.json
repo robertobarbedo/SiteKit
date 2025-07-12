@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "site": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Site name "
+        },
+        "site_path": {
+          "type": "string",
+          "description": "Site path "
+        },
+        "default_language": {
+          "type": "string",
+          "description": "Default language "
+        },
+        "dictionary_path": {
+          "type": "string",
+          "description": "Dictionary path "
+        },
+        "site_template_path": {
+          "type": "string",
+          "description": "Site template path "
+        },
+        "datasource_template_path": {
+          "type": "string",
+          "description": "Datasource template path "
+        },
+        "rendering_path": {
+          "type": "string",
+          "description": "Rendering path "
+        },
+        "placeholder_path": {
+          "type": "string",
+          "description": "Placeholder path "
+        },
+        "available_renderings_path": {
+          "type": "string",
+          "description": "Available renderings path "
+        },
+        "site_placeholder_path": {
+          "type": "string",
+          "description": "Site placeholder path "
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "page_workflow": {
+              "type": "string",
+              "description": "Page workflow ID"
+            },
+            "datasource_workflow": {
+              "type": "string",
+              "description": "Datasource workflow ID"
+            },
+            "language_fallback": {
+              "type": "boolean",
+              "description": "Language fallback setting - boolean value"
+            }
+          },
+          "additionalProperties": true,
+          "description": "Default settings object with flexible properties"
+        }
+      },
+      "additionalProperties": true,
+      "description": "Site configuration object with flexible properties"
+    }
+  },
+  "required": ["site"],
+  "additionalProperties": true,
+  "title": "Sitecore Site Settings Configuration Schema",
+  "description": "Schema for Sitecore site settings configuration files defining site paths, templates, and default settings"
+} 

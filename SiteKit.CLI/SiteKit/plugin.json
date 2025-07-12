@@ -1,0 +1,43 @@
+{
+  "commands": [
+    {
+      "name": "sitekit",
+      "description": "SiteKit CLI plugin for deploying YAML files to Sitecore",
+      "type": "CLIPlugin",
+      "subCommands": [
+        {
+          "name": "deploy",
+          "description": "Deploy YAML files to Sitecore",
+          "options": [
+            {
+              "name": "site",
+              "shortName": "s",
+              "description": "Site name (required)",
+              "isRequired": true,
+              "type": "string"
+            },
+            {
+              "name": "environment",
+              "shortName": "n",
+              "description": "Environment name (default: xmCloud)",
+              "isRequired": false,
+              "type": "string",
+              "defaultValue": "xmCloud"
+            },
+            {
+              "name": "verbose",
+              "shortName": "v",
+              "description": "Enable verbose logging",
+              "isRequired": false,
+              "type": "bool",
+              "defaultValue": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "author": "SiteKit Team",
+  "isEnabled": true,
+  "version": "1.0.0"
+} 

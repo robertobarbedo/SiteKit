@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/sitecore_yaml_config/refs/heads/main/schemas/composition-schema.json
+composition:
+  groups:
+    common:
+      - Button
+    containers:
+      - One Column
+
+  pages:
+    Content Page:
+      main:
+      - containers
+
+  components:
+    One Column:
+      main:
+      - Button

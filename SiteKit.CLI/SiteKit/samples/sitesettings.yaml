@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/sitecore_yaml_config/refs/heads/main/schemas/sitesettings-schema.json
+site:
+  name: $(name)
+  default_language: "en"
+  site_path: $(site_path)
+  dictionary_path: $(dictionary_path)
+  site_template_path: $(site_template_path)
+  datasource_template_path: $(datasource_template_path)
+  rendering_path: $(rendering_path)
+  placeholder_path: $(placeholder_path)
+  available_renderings_path: $(available_renderings_path)
+  site_placeholder_path: $(site_placeholder_path)
+  defaults:
+    page_workflow: $(page_workflow)
+    datasource_workflow: $(datasource_workflow)
+    language_fallback: false
+
+

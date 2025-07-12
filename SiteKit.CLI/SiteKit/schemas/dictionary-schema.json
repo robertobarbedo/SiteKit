@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dictionary": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Key": {
+                "type": "string",
+                "description": "Dictionary key - can be any text"
+              },
+              "Phrase": {
+                "type": "string",
+                "description": "Dictionary phrase/translation - can be any text"
+              }
+            },
+            "required": ["Key", "Phrase"],
+            "additionalProperties": false,
+            "description": "Dictionary entry with required Key and Phrase"
+          },
+          "description": "Array of dictionary entries"
+        }
+      },
+      "required": ["entries"],
+      "additionalProperties": false,
+      "description": "Dictionary object containing entries array"
+    }
+  },
+  "required": ["dictionary"],
+  "additionalProperties": false,
+  "title": "Sitecore Dictionary Configuration Schema",
+  "description": "Schema for Sitecore dictionary configuration files defining key-phrase pairs for localization"
+} 

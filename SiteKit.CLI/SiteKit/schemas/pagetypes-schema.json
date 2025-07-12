@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/your-org/sitecore-yaml-schemas/main/pagetypes-schema.json",
+  "title": "Sitecore Page Types Configuration",
+  "description": "JSON Schema for Sitecore pagetypes.yaml configuration file",
+  "type": "object",
+  "required": ["pagetypes"],
+  "properties": {
+    "pagetypes": {
+      "type": "array",
+      "description": "List of page type (same as Sitecore Templates)",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Page type name - (or Sitecore Template name) (free format)",
+            "minLength": 1,
+            "examples": ["Content Page", "Landing Page", "FAQ Page"]
+          },
+          "fields": {
+            "type": "array",
+            "description": "Page type fields (or Sitecore Template Fields)",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Field name (Pascal Case format)",
+                  "minLength": 1,
+                  "examples": ["Heading", "Text", "BackgroundImage", "PrimaryButton"],
+                  "pattern": "^[A-Z][a-zA-Z0-9]*([A-Z][a-zA-Z0-9]*)*$"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Field type from supported Sitecore field types",
+                  "enum": [
+                    "Single-Line Text",
+                    "Date",
+                    "DateTime", 
+                    "Checkbox",
+                    "File",
+                    "Image",
+                    "Integer",
+                    "Multi-Line Text",
+                    "Number",
+                    "Rich Text",
+                    "Checklist",
+                    "Droplist",
+                    "Multilist",
+                    "Treelist",
+                    "Taglist",
+                    "Multiroot Treelist",
+                    "Droplink",
+                    "General Link"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+} 

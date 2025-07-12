@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/sitecore_yaml_config/refs/heads/main/schemas/components-schema.json
+components:
+  - name: One Column
+    category: Page Structure
+
+  - name: Button
+    category: Navigation
+    rendering:
+      - name: __Icon
+        value: Office/32x32/link.png
+    variants:
+      - Primary
+      - Secondary
+    fields: 
+      - name: Link
+        type: General Link
