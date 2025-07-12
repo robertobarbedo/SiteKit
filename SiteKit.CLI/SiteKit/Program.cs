@@ -71,6 +71,9 @@ public class Program
         // Also add deploy subcommand for backward compatibility
         rootCommand.AddCommand(CreateSiteKitCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
 
+        // Add init command
+        rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, verboseOption));
+
         return await rootCommand.InvokeAsync(args);
     }
 
@@ -115,11 +118,60 @@ public class Program
 
         return command;
     }
+
+    private static Command CreateInitCommand(ServiceProvider serviceProvider, ILogger<Program> logger, Option<bool> verboseOption)
+    {
+        var tenantOption = new Option<string>(
+            aliases: new[] { "-t", "--tenant" },
+            description: "Tenant name (required)")
+        {
+            IsRequired = true
+        };
+
+        var siteOption = new Option<string>(
+            aliases: new[] { "-s", "--site" },
+            description: "Site name (required)")
+        {
+            IsRequired = true
+        };
+
+        var command = new Command("init", "Initialize SiteKit project with sample YAML files")
+        {
+            tenantOption,
+            siteOption,
+            verboseOption
+        };
+
+        command.SetHandler(async (tenant, site, verbose) =>
+        {
+            var siteKitService = serviceProvider.GetRequiredService<ISiteKitService>();
+
+            if (verbose)
+            {
+                logger.LogInformation("Verbose mode enabled");
+                logger.LogInformation($"Initializing SiteKit project for tenant: {tenant}, site: {site}");
+            }
+
+            try
+            {
+                await siteKitService.InitializeAsync(tenant, site, verbose);
+                logger.LogInformation("SiteKit project initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Initialization failed");
+                Environment.Exit(1);
+            }
+        }, tenantOption, siteOption, verboseOption);
+
+        return command;
+    }
 }
 
 public interface ISiteKitService
 {
     Task DeployAsync(string siteName, string environment, bool verbose);
+    Task InitializeAsync(string tenant, string site, bool verbose);
 }
 
 public class SiteKitService : ISiteKitService
@@ -131,6 +183,101 @@ public class SiteKitService : ISiteKitService
     {
         _httpClient = httpClient;
         _logger = logger;
+    }
+
+    public async Task InitializeAsync(string tenant, string site, bool verbose)
+    {
+        var currentDir = Directory.GetCurrentDirectory();
+        var siteKitDir = Path.Combine(currentDir, ".sitekit");
+        var siteDir = Path.Combine(siteKitDir, site);
+
+        // Create .sitekit folder if it doesn't exist
+        if (!Directory.Exists(siteKitDir))
+        {
+            Directory.CreateDirectory(siteKitDir);
+            if (verbose)
+            {
+                _logger.LogInformation($"Created .sitekit directory at: {siteKitDir}");
+            }
+        }
+
+        // Create site subfolder
+        if (!Directory.Exists(siteDir))
+        {
+            Directory.CreateDirectory(siteDir);
+            if (verbose)
+            {
+                _logger.LogInformation($"Created site directory at: {siteDir}");
+            }
+        }
+
+        // Define files to download
+        var filesToDownload = new Dictionary<string, string>
+        {
+            { "components.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/components.yaml" },
+            { "composition.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/composition.yaml" },
+            { "dictionary.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/dictionary.yaml" },
+            { "pagetypes.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/pagetypes.yaml" },
+            { "sitesettings.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/sitesettings.yaml" }
+        };
+
+        // Download files
+        foreach (var file in filesToDownload)
+        {
+            var filePath = Path.Combine(siteDir, file.Key);
+            
+            if (verbose)
+            {
+                _logger.LogInformation($"Downloading {file.Key} from {file.Value}");
+            }
+
+            try
+            {
+                var response = await _httpClient.GetAsync(file.Value);
+                response.EnsureSuccessStatusCode();
+                
+                var content = await response.Content.ReadAsStringAsync();
+                await File.WriteAllTextAsync(filePath, content);
+                
+                if (verbose)
+                {
+                    _logger.LogInformation($"Downloaded {file.Key} to {filePath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to download {file.Key}");
+                throw;
+            }
+        }
+
+        // Replace placeholders in sitesettings.yaml
+        var siteSettingsPath = Path.Combine(siteDir, "sitesettings.yaml");
+        if (File.Exists(siteSettingsPath))
+        {
+            var content = await File.ReadAllTextAsync(siteSettingsPath);
+            
+            // Replace placeholders
+            content = content
+                .Replace("$(name)", $"\"{site}\"")
+                .Replace("$(site_path)", $"/sitecore/content/{tenant}/{site}")
+                .Replace("$(dictionary_path)", $"/sitecore/content/{tenant}/{site}/Dictionary")
+                .Replace("$(site_template_path)", $"/sitecore/templates/Project/{tenant}")
+                .Replace("$(datasource_template_path)", $"/sitecore/templates/Feature/{tenant}")
+                .Replace("$(rendering_path)", $"/sitecore/layout/Renderings/Feature/{tenant}")
+                .Replace("$(placeholder_path)", $"/sitecore/layout/Placeholder Settings/Feature/{tenant}")
+                .Replace("$(available_renderings_path)", $"/sitecore/content/{tenant}/{site}/Presentation/Available Renderings")
+                .Replace("$(site_placeholder_path)", $"/sitecore/content/{tenant}/{site}/Presentation/Placeholder Settings");
+
+            await File.WriteAllTextAsync(siteSettingsPath, content);
+            
+            if (verbose)
+            {
+                _logger.LogInformation($"Updated sitesettings.yaml with tenant: {tenant} and site: {site}");
+            }
+        }
+
+        _logger.LogInformation($"SiteKit project initialized successfully in {siteDir}");
     }
 
     public async Task DeployAsync(string siteName, string environment, bool verbose)
