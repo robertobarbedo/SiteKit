@@ -29,6 +29,11 @@ namespace SiteKit.Processors
             return args.SiteConfig.Site;
         }
 
+        public string GetId(string pathOrId)
+        {
+            return Database.GetItem(pathOrId).ID.ToString();
+        }
+
         protected Database Database;
     }
 }

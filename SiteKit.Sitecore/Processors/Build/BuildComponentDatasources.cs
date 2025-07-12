@@ -76,7 +76,7 @@ namespace SiteKit.Processors
                 standardValues = template.Add("__Standard Values", new TemplateID(template.ID), stdid);
             }
             standardValues.Editing.BeginEdit();
-            standardValues[FieldIDs.DefaultWorkflow] = args.SiteConfig.Site.Defaults.DatasourceWorkflow;
+            standardValues[FieldIDs.DefaultWorkflow] = GetId(args.SiteConfig.Site.Defaults.DatasourceWorkflow);
             standardValues[FieldIDs.EnableItemFallback] = args.SiteConfig.Site.Defaults.LanguageFallback ? "1" : "0";
             standardValues.Editing.EndEdit();
             SetDefaultFields(standardValues);

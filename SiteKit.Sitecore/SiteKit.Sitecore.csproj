@@ -74,29 +74,29 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Compile Include="Auto\AutoArgs.cs" />
-    <Compile Include="Auto\AutoManager.cs" />
-    <Compile Include="Auto\Processors\AutoBase.cs" />
-    <Compile Include="Auto\Processors\Build\BuildComponentCategoryFolders.cs" />
-    <Compile Include="Auto\Processors\Build\BuildPlaceholderSettingsForPages.cs" />
-    <Compile Include="Auto\Processors\Build\BuildPlaceholderSettingsForComponents.cs" />
-    <Compile Include="Auto\Processors\Build\BuildVariants.cs" />
-    <Compile Include="Auto\Processors\Build\BuildStyles.cs" />
-    <Compile Include="Auto\Processors\Build\BuildRenderingsPageContainers.cs" />
-    <Compile Include="Auto\Processors\Build\BuildSharedDataFolders.cs" />
-    <Compile Include="Auto\Processors\Build\BuildRenderings.cs" />
-    <Compile Include="Auto\Processors\Build\BuildPageTemplates.cs" />
-    <Compile Include="Auto\Processors\Build\BuildComponentDatasources.cs" />
-    <Compile Include="Auto\Processors\CompositionResolver.cs" />
-    <Compile Include="Auto\Processors\ReadYaml.cs" />
-    <Compile Include="Auto\Processors\LoadTypes.cs" />
-    <Compile Include="Auto\Processors\Validate\ValidateYamlData.cs" />
-    <Compile Include="Auto\SupportedFields.cs" />
-    <Compile Include="Auto\Types\ComponentConfig.cs" />
-    <Compile Include="Auto\Types\FieldDefinition.cs" />
-    <Compile Include="Auto\Types\CompositionConfig.cs" />
-    <Compile Include="Auto\Types\PageTypesConfig.cs" />
-    <Compile Include="Auto\Types\SiteConfig.cs" />
+    <Compile Include="AutoArgs.cs" />
+    <Compile Include="AutoManager.cs" />
+    <Compile Include="Processors\AutoBase.cs" />
+    <Compile Include="Processors\Build\BuildComponentCategoryFolders.cs" />
+    <Compile Include="Processors\Build\BuildPlaceholderSettingsForPages.cs" />
+    <Compile Include="Processors\Build\BuildPlaceholderSettingsForComponents.cs" />
+    <Compile Include="Processors\Build\BuildVariants.cs" />
+    <Compile Include="Processors\Build\BuildStyles.cs" />
+    <Compile Include="Processors\Build\BuildRenderingsPageContainers.cs" />
+    <Compile Include="Processors\Build\BuildSharedDataFolders.cs" />
+    <Compile Include="Processors\Build\BuildRenderings.cs" />
+    <Compile Include="Processors\Build\BuildPageTemplates.cs" />
+    <Compile Include="Processors\Build\BuildComponentDatasources.cs" />
+    <Compile Include="Processors\CompositionResolver.cs" />
+    <Compile Include="Processors\ReadYaml.cs" />
+    <Compile Include="Processors\LoadTypes.cs" />
+    <Compile Include="Processors\Validate\ValidateYamlData.cs" />
+    <Compile Include="SupportedFields.cs" />
+    <Compile Include="Types\ComponentConfig.cs" />
+    <Compile Include="Types\FieldDefinition.cs" />
+    <Compile Include="Types\CompositionConfig.cs" />
+    <Compile Include="Types\PageTypesConfig.cs" />
+    <Compile Include="Types\SiteConfig.cs" />
     <Compile Include="Handlers\YamlFolderSave.cs" />
   </ItemGroup>
   <PropertyGroup>
