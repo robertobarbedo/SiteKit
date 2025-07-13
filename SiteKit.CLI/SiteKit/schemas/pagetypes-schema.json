@@ -57,9 +57,26 @@
                     "Droplink",
                     "General Link"
                   ]
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Field source (free format string)",
+                  "examples": ["query:./", "/sitecore/content/Global/Settings"]
+                },
+                "default": {
+                  "type": "string",
+                  "description": "Field default value (free format string)",
+                  "examples": ["$name", "Default Value"]
                 }
               },
               "additionalProperties": false
+            }
+          },
+          "layout": {
+            "type": "array",
+            "description": "Layout structure with nested components",
+            "items": {
+              "$ref": "#/$defs/layoutItem"
             }
           }
         },
@@ -67,5 +84,31 @@
       }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "layoutItem": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Component name",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "array",
+              "description": "Nested layout items",
+              "items": {
+                "$ref": "#/$defs/layoutItem"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1
+        }
+      ]
+    }
+  }
 } 
