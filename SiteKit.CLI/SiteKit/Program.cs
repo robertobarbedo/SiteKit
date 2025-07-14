@@ -10,7 +10,7 @@ public class Program
     public static async Task<int> Main(string[] args)
     {
         var services = new ServiceCollection();
-        ConfigureServices(services);
+        ConfigureServices(services, false); // Default to non-verbose
 
         var serviceProvider = services.BuildServiceProvider();
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
@@ -38,37 +38,9 @@ public class Program
             IsRequired = false
         };
 
-        var rootCommand = new RootCommand("SiteKit CLI - Sitecore YAML deployment tool")
-        {
-            siteOption,
-            environmentOption,
-            verboseOption
-        };
+        var rootCommand = new RootCommand("SiteKit CLI - Sitecore YAML deployment tool");
 
-        // Add handler to root command for direct deployment
-        rootCommand.SetHandler(async (site, environment, verbose) =>
-        {
-            var siteKitService = serviceProvider.GetRequiredService<ISiteKitService>();
-
-            if (verbose)
-            {
-                logger.LogInformation("Verbose mode enabled");
-                logger.LogInformation($"Starting deployment for site: {site}, environment: {environment}");
-            }
-
-            try
-            {
-                await siteKitService.DeployAsync(site, environment, verbose);
-                logger.LogInformation("Deployment completed successfully");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Deployment failed");
-                Environment.Exit(1);
-            }
-        }, siteOption, environmentOption, verboseOption);
-
-        // Also add deploy subcommand for backward compatibility
+        // Add deploy command
         rootCommand.AddCommand(CreateSiteKitCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
 
         // Add init command
@@ -77,12 +49,18 @@ public class Program
         return await rootCommand.InvokeAsync(args);
     }
 
-    private static void ConfigureServices(IServiceCollection services)
+    private static void ConfigureServices(IServiceCollection services, bool verbose)
     {
         services.AddLogging(builder =>
         {
             builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
+            builder.SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Warning);
+            
+            // Suppress HTTP client logs unless verbose
+            if (!verbose)
+            {
+                builder.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+            }
         });
 
         services.AddHttpClient();
@@ -92,26 +70,45 @@ public class Program
     private static Command CreateSiteKitCommand(ServiceProvider serviceProvider, ILogger<Program> logger, 
         Option<string> siteOption, Option<string> environmentOption, Option<bool> verboseOption)
     {
-        var command = new Command("deploy", "Deploy YAML files to Sitecore");
+        var command = new Command("deploy", "Deploy YAML files to Sitecore")
+        {
+            siteOption,
+            environmentOption,
+            verboseOption
+        };
 
         command.SetHandler(async (site, environment, verbose) =>
         {
-            var siteKitService = serviceProvider.GetRequiredService<ISiteKitService>();
+            // Create service provider with correct verbose setting
+            var services = new ServiceCollection();
+            ConfigureServices(services, verbose);
+            var verboseServiceProvider = services.BuildServiceProvider();
+            var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
+            
+            var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
 
             if (verbose)
             {
-                logger.LogInformation("Verbose mode enabled");
-                logger.LogInformation($"Starting deployment for site: {site}, environment: {environment}");
+                verboseLogger.LogInformation("Verbose mode enabled");
+                verboseLogger.LogInformation($"Starting deployment for site: {site}, environment: {environment}");
             }
 
             try
             {
                 await siteKitService.DeployAsync(site, environment, verbose);
-                logger.LogInformation("Deployment completed successfully");
+                if (!verbose)
+                {
+                    // Only show essential completion message in non-verbose mode
+                    //Console.WriteLine("Deployment completed successfully");
+                }
+                else
+                {
+                    verboseLogger.LogInformation("Deployment Finished");
+                }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Deployment failed");
+                verboseLogger.LogError(ex, "Deployment failed");
                 Environment.Exit(1);
             }
         }, siteOption, environmentOption, verboseOption);
@@ -144,22 +141,36 @@ public class Program
 
         command.SetHandler(async (tenant, site, verbose) =>
         {
-            var siteKitService = serviceProvider.GetRequiredService<ISiteKitService>();
+            // Create service provider with correct verbose setting
+            var services = new ServiceCollection();
+            ConfigureServices(services, verbose);
+            var verboseServiceProvider = services.BuildServiceProvider();
+            var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
+            
+            var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
 
             if (verbose)
             {
-                logger.LogInformation("Verbose mode enabled");
-                logger.LogInformation($"Initializing SiteKit project for tenant: {tenant}, site: {site}");
+                verboseLogger.LogInformation("Verbose mode enabled");
+                verboseLogger.LogInformation($"Initializing SiteKit project for tenant: {tenant}, site: {site}");
             }
 
             try
             {
                 await siteKitService.InitializeAsync(tenant, site, verbose);
-                logger.LogInformation("SiteKit project initialized successfully");
+                if (!verbose)
+                {
+                    // Only show essential completion message in non-verbose mode
+                    Console.WriteLine("SiteKit project initialized successfully");
+                }
+                else
+                {
+                    verboseLogger.LogInformation("SiteKit project initialized successfully");
+                }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Initialization failed");
+                verboseLogger.LogError(ex, "Initialization failed");
                 Environment.Exit(1);
             }
         }, tenantOption, siteOption, verboseOption);
@@ -277,7 +288,10 @@ public class SiteKitService : ISiteKitService
             }
         }
 
-        _logger.LogInformation($"SiteKit project initialized successfully in {siteDir}");
+        if (verbose)
+        {
+            _logger.LogInformation($"SiteKit project initialized successfully in {siteDir}");
+        }
     }
 
     public async Task DeployAsync(string siteName, string environment, bool verbose)
@@ -306,7 +320,11 @@ public class SiteKitService : ISiteKitService
         await UpdateLogAsync(endpoint, siteName, verbose);
         var logValue = await GetLogValueAsync(endpoint, siteName, verbose);
 
-        _logger.LogInformation($"Log value: {logValue}");
+        // Always show log value regardless of verbose mode
+        if (!string.IsNullOrEmpty(logValue))
+        {
+            Console.WriteLine($"Log value: {logValue}");
+        }
     }
 
     private async Task<string> GetAccessTokenAsync(string dir, string environment, bool verbose)

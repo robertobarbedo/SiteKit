@@ -44,8 +44,13 @@ namespace SiteKit.Types
 
     public class SiteDefaults
     {
+        
+        [YamlMember(Alias = "page_base_template")]
+        public string PageBaseTemplate { get; set; }
+
         [YamlMember(Alias = "page_workflow")]
         public string PageWorkflow { get; set; }
+        
         [YamlMember(Alias = "datasource_workflow")]
         public string DatasourceWorkflow { get; set; }
 

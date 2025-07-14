@@ -66,7 +66,7 @@
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Config\Include\Auto.config" />
+    <Content Include="App_Config\Include\SiteKit.config" />
     <None Include="SiteKit.Sitecore.wpp.targets" />
     <None Include="Properties\PublishProfiles\Local.pubxml" />
     <None Include="README.md" />
@@ -78,6 +78,8 @@
     <Compile Include="AutoManager.cs" />
     <Compile Include="Processors\AutoBase.cs" />
     <Compile Include="Processors\Build\BuildComponentCategoryFolders.cs" />
+    <Compile Include="Processors\Build\BuildPageTemplatesStdValuesLayout.cs" />
+    <Compile Include="Processors\Build\BuildPageTemplatesStdValues.cs" />
     <Compile Include="Processors\Build\BuildPlaceholderSettingsForPages.cs" />
     <Compile Include="Processors\Build\BuildPlaceholderSettingsForComponents.cs" />
     <Compile Include="Processors\Build\BuildVariants.cs" />
@@ -90,6 +92,7 @@
     <Compile Include="Processors\CompositionResolver.cs" />
     <Compile Include="Processors\ReadYaml.cs" />
     <Compile Include="Processors\LoadTypes.cs" />
+    <Compile Include="Processors\Validate\ValidatePageTypeLayout.cs" />
     <Compile Include="Processors\Validate\ValidateYamlData.cs" />
     <Compile Include="SupportedFields.cs" />
     <Compile Include="Types\ComponentConfig.cs" />

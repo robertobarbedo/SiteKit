@@ -28,7 +28,7 @@ namespace SiteKit.Processors
                 template = folder.Add(pagetype.Name, new TemplateID(Sitecore.TemplateIDs.Template), id);
             }
             template.Editing.BeginEdit();
-            template[FieldIDs.BaseTemplate] = Database.GetItem(GetSite(args).SiteTemplatePath + "/Page").ID.ToString();
+            template[FieldIDs.BaseTemplate] = GetBaseTemplate(args, pagetype);
             template[FieldIDs.Icon] = "Office/32x32/document_text.png";
             template.Editing.EndEdit();
             SetDefaultFields(template);
@@ -59,19 +59,25 @@ namespace SiteKit.Processors
                     fieldItem.Editing.EndEdit();
                 }
             }
+        }
 
-            // Create __Standard Values if not exists
-            var stdid = args.GetUniqueID("page_template", pagetype.Name + "/__Standard Values");
-            var standardValues = Database.GetItem(stdid);
-            if (standardValues == null)
+        private string GetBaseTemplate(AutoArgs args, PageType pagetype)
+        {
+            try
             {
-                standardValues = template.Add("__Standard Values", new TemplateID(template.ID), stdid);
+                if (!string.IsNullOrWhiteSpace(args.SiteConfig.Site.Defaults.PageBaseTemplate))
+                {
+                    return GetId(args.SiteConfig.Site.Defaults.PageBaseTemplate);
+                }
+                else
+                {
+                    return GetId(GetSite(args).SiteTemplatePath + "/Page");
+                }
             }
-            standardValues.Editing.BeginEdit();
-            standardValues[FieldIDs.DefaultWorkflow] = GetId(args.SiteConfig.Site.Defaults.PageWorkflow);
-            standardValues[FieldIDs.EnableItemFallback] = args.SiteConfig.Site.Defaults.LanguageFallback ? "1" : "0";
-            standardValues.Editing.EndEdit();
-            SetDefaultFields(standardValues);
+            catch
+            {
+                return "";
+            }
         }
     }
 }

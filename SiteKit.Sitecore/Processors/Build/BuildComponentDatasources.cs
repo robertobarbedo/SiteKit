@@ -74,6 +74,11 @@ namespace SiteKit.Processors
             if (standardValues == null)
             {
                 standardValues = template.Add("__Standard Values", new TemplateID(template.ID), stdid);
+
+                //set in the template
+                template.Editing.BeginEdit();
+                template[FieldIDs.StandardValues] = stdid.ToString();
+                template.Editing.EndEdit();
             }
             standardValues.Editing.BeginEdit();
             standardValues[FieldIDs.DefaultWorkflow] = GetId(args.SiteConfig.Site.Defaults.DatasourceWorkflow);

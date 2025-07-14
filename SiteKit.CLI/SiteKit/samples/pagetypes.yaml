@@ -4,11 +4,14 @@ pagetypes:
     fields:
       - name: Heading
         type: Single-Line Text
-        source: "query:./"
         default: "$name"
       - name: Text
         type: Rich Text
+        source: ""
     layout:
-      - One Column
+      - component: One Column
+        children: 
+          - component: One Columns
+
     
     

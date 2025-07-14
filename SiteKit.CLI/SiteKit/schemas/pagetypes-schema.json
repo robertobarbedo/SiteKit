@@ -20,6 +20,12 @@
             "minLength": 1,
             "examples": ["Content Page", "Landing Page", "FAQ Page"]
           },
+          "page_base_template": {
+            "type": "string",
+            "description": "Base template that this page type inherits from",
+            "minLength": 1,
+            "examples": ["Standard template", "Base Page", "Content Base"]
+          },
           "fields": {
             "type": "array",
             "description": "Page type fields (or Sitecore Template Fields)",
@@ -95,10 +101,30 @@
         },
         {
           "type": "object",
+          "description": "Layout component with optional children",
+          "required": ["component"],
+          "properties": {
+            "component": {
+              "type": "string",
+              "description": "Component name",
+              "minLength": 1
+            },
+            "children": {
+              "type": "array",
+              "description": "Child layout items",
+              "items": {
+                "$ref": "#/$defs/layoutItem"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
           "patternProperties": {
             ".*": {
               "type": "array",
-              "description": "Nested layout items",
+              "description": "Nested layout items (legacy format)",
               "items": {
                 "$ref": "#/$defs/layoutItem"
               }

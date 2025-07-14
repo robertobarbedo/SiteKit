@@ -17,5 +17,12 @@ namespace SiteKit.Types
     {
         public string Name { get; set; }
         public List<FieldDefinition> Fields { get; set; }
+        public List<LayoutComponent> Layout { get; set; }
+    }
+
+    public class LayoutComponent
+    {
+        public string Component { get; set; }
+        public List<LayoutComponent> Children { get; set; }
     }
 }
