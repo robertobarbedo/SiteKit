@@ -1,4 +1,6 @@
 ﻿using System.CommandLine;
+using System.IO.Compression;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -99,12 +101,7 @@ public class Program
             try
             {
                 await siteKitService.DeployAsync(site, environment, verbose);
-                if (!verbose)
-                {
-                    // Only show essential completion message in non-verbose mode
-                    //Console.WriteLine("Deployment completed successfully");
-                }
-                else
+                if (verbose)
                 {
                     verboseLogger.LogInformation("Deployment Finished");
                 }
@@ -148,12 +145,7 @@ public class Program
             try
             {
                 await siteKitService.ValidateAsync(site, environment, verbose);
-                if (!verbose)
-                {
-                    // Only show essential completion message in non-verbose mode
-                    //Console.WriteLine("Validation completed successfully");
-                }
-                else
+                if (verbose)
                 {
                     verboseLogger.LogInformation("Validation Finished");
                 }
@@ -255,6 +247,65 @@ public class SiteKitService : ISiteKitService
         var siteKitDir = Path.Combine(currentDir, ".sitekit");
         var siteDir = Path.Combine(siteKitDir, site);
 
+        // Track user responses
+        bool addToSolution = false;
+        bool deployToDocker = false;
+        
+        // Find solution file
+        var solutionFile = FindSolutionFile(currentDir, verbose);
+        if (!string.IsNullOrEmpty(solutionFile))
+        {
+            Console.Write($"Do you want to add the client package(dll and config) in solution {solutionFile}? (Y/n): ");
+            var response = Console.ReadLine();
+            
+            if (string.IsNullOrEmpty(response) || response.Trim().ToLowerInvariant() == "y" || response.Trim().ToLowerInvariant() == "yes")
+            {
+                Console.WriteLine("-");
+                Console.WriteLine("A config file 'app_config/include/SiteKit.config' is added.");
+                Console.WriteLine("A bin 'app_data/sitekit/SiteKit.dll' is added.");
+                Console.WriteLine("A bin 'app_data/sitekit/YamlDotNet.dll' is added.");
+                Console.WriteLine("You need to edit your solution to include these files for XM Cloud Deployment.");
+                Console.WriteLine("-");
+                addToSolution = true;
+            }
+            else
+            {
+                if (verbose)
+                {
+                    _logger.LogInformation("User chose not to add client package to solution");
+                }
+            }
+        }
+
+        // Find docker deploy folder
+        var dockerDeployFolder = FindDockerDeployFolder(currentDir, verbose);
+        if (!string.IsNullOrEmpty(dockerDeployFolder))
+        {
+            Console.Write($"Do you want to deploy the package content(dll and config) to the docker deploy folder {dockerDeployFolder}? (Y/n): ");
+            var deployResponse = Console.ReadLine();
+            
+            if (string.IsNullOrEmpty(deployResponse) || deployResponse.Trim().ToLowerInvariant() == "y" || deployResponse.Trim().ToLowerInvariant() == "yes")
+            {
+                deployToDocker = true;
+                Console.WriteLine("-");
+                Console.WriteLine("The configs and bins were added to your docker/deploy folder and should be ready to use with the 'containered' CM.");
+                Console.WriteLine("-");
+            }
+            else
+            {
+                if (verbose)
+                {
+                    _logger.LogInformation("User chose not to deploy package content to docker deploy folder");
+                }
+            }
+        }
+
+        // If either answer was YES, download and extract the package
+        if (addToSolution || deployToDocker)
+        {
+            await DownloadAndExtractPackageAsync(solutionFile, dockerDeployFolder, addToSolution, deployToDocker, verbose);
+        }
+
         // Create .sitekit folder if it doesn't exist
         if (!Directory.Exists(siteKitDir))
         {
@@ -347,12 +398,223 @@ public class SiteKitService : ISiteKitService
         }
     }
 
+    private string FindSolutionFile(string currentDir, bool verbose)
+    {
+        // First check in the "authoring\" folder
+        var authoringDir = Path.Combine(currentDir, "authoring");
+        if (Directory.Exists(authoringDir))
+        {
+            var authoringSolutions = Directory.GetFiles(authoringDir, "*.sln");
+            if (authoringSolutions.Length > 0)
+            {
+                if (verbose)
+                {
+                    _logger.LogInformation($"Found solution file in authoring folder: {authoringSolutions[0]}");
+                }
+                return authoringSolutions[0];
+            }
+        }
+
+        // If not found in authoring folder, recursively search for the first *.sln file
+        var solutions = Directory.GetFiles(currentDir, "*.sln", SearchOption.AllDirectories);
+        if (solutions.Length > 0)
+        {
+            if (verbose)
+            {
+                _logger.LogInformation($"Found solution file: {solutions[0]}");
+            }
+            return solutions[0];
+        }
+
+        if (verbose)
+        {
+            _logger.LogInformation("No solution file found");
+        }
+        
+        return string.Empty;
+    }
+
+    private string FindDockerDeployFolder(string currentDir, bool verbose)
+    {
+        // Recursively search for docker/deploy folder
+        var dockerDeployFolders = Directory.GetDirectories(currentDir, "deploy", SearchOption.AllDirectories)
+            .Where(dir => Path.GetFileName(Path.GetDirectoryName(dir))?.ToLowerInvariant() == "docker")
+            .ToArray();
+            
+        if (dockerDeployFolders.Length > 0)
+        {
+            if (verbose)
+            {
+                _logger.LogInformation($"Found docker deploy folder: {dockerDeployFolders[0]}");
+            }
+            return dockerDeployFolders[0];
+        }
+
+        if (verbose)
+        {
+            _logger.LogInformation("No docker/deploy folder found");
+        }
+        
+        return string.Empty;
+    }
+
+    private async Task DownloadAndExtractPackageAsync(string solutionFile, string dockerDeployFolder, bool addToSolution, bool deployToDocker, bool verbose)
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "SiteKit_Package_" + Guid.NewGuid().ToString("N"));
+        
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            
+            if (verbose)
+            {
+                _logger.LogInformation($"Created temp directory: {tempDir}");
+            }
+
+            // Download the package
+            var packageUrl = "https://github.com/robertobarbedo/SiteKit/raw/refs/heads/main/Releases/SiteKit_Client_Package.zip";
+            var packageZipPath = Path.Combine(tempDir, "SiteKit_Client_Package.zip");
+            
+            if (verbose)
+            {
+                _logger.LogInformation($"Downloading package from: {packageUrl}");
+            }
+
+            using (var response = await _httpClient.GetAsync(packageUrl))
+            {
+                response.EnsureSuccessStatusCode();
+                await using var fileStream = File.Create(packageZipPath);
+                await response.Content.CopyToAsync(fileStream);
+            }
+
+            if (verbose)
+            {
+                _logger.LogInformation($"Downloaded package to: {packageZipPath}");
+            }
+
+            // Extract the outer zip file
+            System.IO.Compression.ZipFile.ExtractToDirectory(packageZipPath, tempDir);
+            
+            if (verbose)
+            {
+                _logger.LogInformation("Extracted outer zip file");
+            }
+
+            // Extract the inner package.zip
+            var innerZipPath = Path.Combine(tempDir, "package.zip");
+            if (File.Exists(innerZipPath))
+            {
+                System.IO.Compression.ZipFile.ExtractToDirectory(innerZipPath, tempDir);
+                
+                if (verbose)
+                {
+                    _logger.LogInformation("Extracted inner package.zip");
+                }
+
+                // Copy files to respective locations
+                var filesDir = Path.Combine(tempDir, "files");
+                if (Directory.Exists(filesDir))
+                {
+                    if (addToSolution && !string.IsNullOrEmpty(solutionFile))
+                    {
+                        var platformDir = Path.Combine(Path.GetDirectoryName(solutionFile)!, "Platform");
+                        CopyDirectory(filesDir, platformDir, verbose);
+                        
+                        if (verbose)
+                        {
+                            _logger.LogInformation($"Copied files to solution platform directory: {platformDir}");
+                        }
+                    }
+
+                    if (deployToDocker && !string.IsNullOrEmpty(dockerDeployFolder))
+                    {
+                        var dockerPlatformDir = Path.Combine(dockerDeployFolder, "Platform");
+                        CopyDirectory(filesDir, dockerPlatformDir, verbose);
+                        
+                        if (verbose)
+                        {
+                            _logger.LogInformation($"Copied files to docker deploy platform directory: {dockerPlatformDir}");
+                        }
+                    }
+                }
+                else
+                {
+                    if (verbose)
+                    {
+                        _logger.LogWarning($"Files directory not found: {filesDir}");
+                    }
+                }
+            }
+            else
+            {
+                if (verbose)
+                {
+                    _logger.LogWarning($"Inner package.zip not found: {innerZipPath}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to download and extract package");
+            throw;
+        }
+        finally
+        {
+            // Clean up temp directory
+            if (Directory.Exists(tempDir))
+            {
+                try
+                {
+                    Directory.Delete(tempDir, true);
+                    if (verbose)
+                    {
+                        _logger.LogInformation($"Cleaned up temp directory: {tempDir}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (verbose)
+                    {
+                        _logger.LogWarning(ex, $"Failed to clean up temp directory: {tempDir}");
+                    }
+                }
+            }
+        }
+    }
+
+    private void CopyDirectory(string sourceDir, string destinationDir, bool verbose)
+    {
+        // Create destination directory if it doesn't exist
+        Directory.CreateDirectory(destinationDir);
+
+        // Copy all files
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            var fileName = Path.GetFileName(file);
+            var destFile = Path.Combine(destinationDir, fileName);
+            File.Copy(file, destFile, true);
+            
+            if (verbose)
+            {
+                _logger.LogDebug($"Copied file: {fileName} to {destFile}");
+            }
+        }
+
+        // Copy all subdirectories recursively
+        foreach (var directory in Directory.GetDirectories(sourceDir))
+        {
+            var dirName = Path.GetFileName(directory);
+            var destDir = Path.Combine(destinationDir, dirName);
+            CopyDirectory(directory, destDir, verbose);
+        }
+    }
+
     public async Task DeployAsync(string siteName, string environment, bool verbose)
     {
         var dir = Directory.GetCurrentDirectory();
-        string accessToken = await GetAccessTokenAsync(dir, environment, verbose);
+        string accessToken = await GetAccessTokenAsync(dir, verbose);
+        string endpoint = await GetEndpointForEnvironment(dir, environment, verbose);
 
-        var endpoint = GetEndpointForEnvironment(environment);
         var parentPath = $"/sitecore/system/Modules/SiteKit/{siteName}";
         var templateId = "ED55F363-5614-48C4-8F90-573535CBC6E3";
 
@@ -383,9 +645,9 @@ public class SiteKitService : ISiteKitService
     public async Task ValidateAsync(string siteName, string environment, bool verbose)
     {
         var dir = Directory.GetCurrentDirectory();
-        string accessToken = await GetAccessTokenAsync(dir, environment, verbose);
+        string accessToken = await GetAccessTokenAsync(dir, verbose);
+        string endpoint = await GetEndpointForEnvironment(dir, environment, verbose);
 
-        var endpoint = GetEndpointForEnvironment(environment);
         var parentPath = $"/sitecore/system/Modules/SiteKit/{siteName}";
         var templateId = "ED55F363-5614-48C4-8F90-573535CBC6E3";
 
@@ -413,8 +675,10 @@ public class SiteKitService : ISiteKitService
         }
     }
 
-    private async Task<string> GetAccessTokenAsync(string dir, string environment, bool verbose)
+    private async Task<string> GetAccessTokenAsync(string dir, bool verbose)
     {
+        string environment = "xmCloud";
+
         var tokenJsonPath = Path.Combine(dir, @".sitecore\user.json");
 
         if (!File.Exists(tokenJsonPath))
@@ -440,14 +704,33 @@ public class SiteKitService : ISiteKitService
         return accessToken ?? throw new InvalidOperationException($"No access token found for environment: {environment}");
     }
 
-    private static string GetEndpointForEnvironment(string environment)
+    private async Task<string> GetEndpointForEnvironment(string dir, string environment, bool verbose)
     {
-        // This could be made configurable
-        return environment switch
+        var tokenJsonPath = Path.Combine(dir, @".sitecore\user.json");
+
+        if (!File.Exists(tokenJsonPath))
         {
-            "xmCloud" => "https://xmcloudcm.localhost/sitecore/api/authoring/graphql/v1",
-            _ => "https://xmcloudcm.localhost/sitecore/api/authoring/graphql/v1"
-        };
+            throw new FileNotFoundException($"Token file not found at: {tokenJsonPath}");
+        }
+
+        var jsonContent = await File.ReadAllTextAsync(tokenJsonPath);
+        var document = JsonDocument.Parse(jsonContent);
+        var root = document.RootElement;
+
+        var host = root
+            .GetProperty("endpoints")
+            .GetProperty(environment)
+            .GetProperty("host")
+            .GetString();
+
+        if (verbose)
+        {
+            _logger.LogDebug($"Evironment Endpoint retrieved host: {host}");
+        }
+
+        string endpoint = host + "/sitecore/api/authoring/graphql/v1";
+
+        return endpoint ?? throw new InvalidOperationException($"No endpoint found for environment: {environment}");
     }
 
     private async Task<string> GetParentIdAsync(string endpoint, string parentPath, bool verbose)
