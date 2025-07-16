@@ -33,30 +33,46 @@ namespace SiteKit.Processors
             template.Editing.EndEdit();
             SetDefaultFields(template);
 
+
             if (pagetype.Fields != null && pagetype.Fields.Count() > 0)
             {
-                // Ensure "Data" section exists
-                var dataid = args.GetUniqueID("page_template", pagetype.Name + "/Data");
-                var dataSection = Database.GetItem(dataid);
-                if (dataSection == null)
-                {
-                    dataSection = template.Add("Data", new TemplateID(Sitecore.TemplateIDs.TemplateSection), dataid);
-                }
-                SetDefaultFields(dataSection);
-
-                // Add fields under "Data"
+                //prepare sections
                 foreach (var field in pagetype.Fields)
+                    if (string.IsNullOrWhiteSpace(field.Section))
+                        field.Section = "Content"; //Default
+
+                // Group fields by section
+                var fieldsBySection = pagetype.Fields.GroupBy(f => f.Section);
+
+                foreach (var sectionGroup in fieldsBySection)
                 {
-                    var fieldid = args.GetUniqueID("page_template", pagetype.Name + "/Data/" + field.Name);
-                    var fieldItem = Database.GetItem(fieldid);
-                    if (fieldItem == null)
+                    var sectionName = sectionGroup.Key;
+
+                    // Ensure section exists
+                    var sectionId = args.GetUniqueID("page_template_section", pagetype.Name + "/" + sectionName);
+                    var section = Database.GetItem(sectionId);
+                    if (section == null)
                     {
-                        fieldItem = dataSection.Add(field.Name, new TemplateID(Sitecore.TemplateIDs.TemplateField), fieldid);
+                        section = template.Add(sectionName, new TemplateID(Sitecore.TemplateIDs.TemplateSection), sectionId);
                     }
-                    SetDefaultFields(fieldItem);
-                    fieldItem.Editing.BeginEdit();
-                    fieldItem["Type"] = field.Type;
-                    fieldItem.Editing.EndEdit();
+                    SetDefaultFields(section);
+
+                    // Add fields under this section
+                    foreach (var field in sectionGroup)
+                    {
+                        var fieldid = args.GetUniqueID("page_template", pagetype.Name + "/" + sectionName + "/" + field.Name);
+                        var fieldItem = Database.GetItem(fieldid);
+                        if (fieldItem == null)
+                        {
+                            fieldItem = section.Add(field.Name, new TemplateID(Sitecore.TemplateIDs.TemplateField), fieldid);
+                        }
+                        SetDefaultFields(fieldItem);
+                        fieldItem.Editing.BeginEdit();
+                        fieldItem["Type"] = field.Type;
+                        if (!string.IsNullOrWhiteSpace(field.Source))
+                            fieldItem["Source"] = field.Source;
+                        fieldItem.Editing.EndEdit();
+                    }
                 }
             }
         }

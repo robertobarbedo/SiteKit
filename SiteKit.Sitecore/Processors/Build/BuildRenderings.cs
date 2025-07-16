@@ -1,3 +1,4 @@
+using Sitecore;
 using Sitecore.Data;
 using Sitecore.Data.Items;
 using SiteKit.Types;
@@ -34,6 +35,8 @@ namespace SiteKit.Processors
                 rendering["Datasource Location"] = $"query:$site/*[@@name='Data']/*[@@templatename='{component.Name} Folder']|query:$sharedSites/*[@@name='Data']/*[@@templatename='{component.Name} Folder']";
                 rendering["Datasource Template"] = Database.GetItem(GetSite(args).DatasourceTemplatePath + "/" + component.Category + "/" + component.Name).Paths.FullPath;
             }
+            if (!string.IsNullOrWhiteSpace(component.Icon))
+                rendering[FieldIDs.Icon] = component.Icon;
 
             //other props
             if (component.Rendering != null)

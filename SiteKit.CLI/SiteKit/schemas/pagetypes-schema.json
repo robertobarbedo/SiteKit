@@ -73,6 +73,12 @@
                   "type": "string",
                   "description": "Field default value (free format string)",
                   "examples": ["$name", "Default Value"]
+                },
+                "section": {
+                  "type": "string",
+                  "description": "Field section grouping",
+                  "minLength": 1,
+                  "examples": ["Content", "Configuration", "Meta Data"]
                 }
               },
               "additionalProperties": false

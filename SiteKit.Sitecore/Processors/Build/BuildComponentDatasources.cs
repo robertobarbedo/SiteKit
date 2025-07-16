@@ -32,39 +32,55 @@ namespace SiteKit.Processors
             }
             template.Editing.BeginEdit();
             //add icon 
-            var icon = component.Rendering?.Where(c => c.Name.Equals("__Icon", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-            if (icon != null)
+            if (!string.IsNullOrWhiteSpace(component.Icon))
             {
-                template[FieldIDs.Icon] = icon.Value;
+                template[FieldIDs.Icon] = component.Icon;
             }
             template.Editing.EndEdit();
             SetDefaultFields(template);
 
+
+
             // Add the fields of the data source template
             if (component.Fields != null && component.Fields.Count() > 0)
             {
-                // Ensure "Data" section exists
-                var dataid = args.GetUniqueID("component_datasource", component.Name + "/Data");
-                var dataSection = Database.GetItem(dataid);
-                if (dataSection == null)
-                {
-                    dataSection = template.Add("Data", new TemplateID(Sitecore.TemplateIDs.TemplateSection), dataid);
-                }
-                SetDefaultFields(dataSection);
-
-                // Add fields under "Data"
+                //prepare sections
                 foreach (var field in component.Fields)
+                    if (string.IsNullOrWhiteSpace(field.Section))
+                        field.Section = "Content"; //Default
+
+                // Group fields by section
+                var fieldsBySection = component.Fields.GroupBy(f => f.Section);
+
+                foreach (var sectionGroup in fieldsBySection)
                 {
-                    var fieldid = args.GetUniqueID("component_datasource", component.Name + "/Data/" + field.Name);
-                    var fieldItem = Database.GetItem(fieldid);
-                    if (fieldItem == null)
+                    var sectionName = sectionGroup.Key;
+
+                    // Ensure section exists
+                    var sectionId = args.GetUniqueID("component_datasource_section", component.Name + "/" + sectionName);
+                    var section = Database.GetItem(sectionId);
+                    if (section == null)
                     {
-                        fieldItem = dataSection.Add(field.Name, new TemplateID(Sitecore.TemplateIDs.TemplateField), fieldid);
+                        section = template.Add(sectionName, new TemplateID(Sitecore.TemplateIDs.TemplateSection), sectionId);
                     }
-                    SetDefaultFields(fieldItem);
-                    fieldItem.Editing.BeginEdit();
-                    fieldItem["Type"] = field.Type;
-                    fieldItem.Editing.EndEdit();
+                    SetDefaultFields(section);
+
+                    // Add fields under this section
+                    foreach (var field in sectionGroup)
+                    {
+                        var fieldid = args.GetUniqueID("component_datasource", component.Name + "/" + sectionName + "/" + field.Name);
+                        var fieldItem = Database.GetItem(fieldid);
+                        if (fieldItem == null)
+                        {
+                            fieldItem = section.Add(field.Name, new TemplateID(Sitecore.TemplateIDs.TemplateField), fieldid);
+                        }
+                        SetDefaultFields(fieldItem);
+                        fieldItem.Editing.BeginEdit();
+                        fieldItem["Type"] = field.Type;
+                        if (!string.IsNullOrWhiteSpace(field.Source))
+                            fieldItem["Source"] = field.Source;
+                        fieldItem.Editing.EndEdit();
+                    }
                 }
             }
 
@@ -83,34 +99,47 @@ namespace SiteKit.Processors
             standardValues.Editing.BeginEdit();
             standardValues[FieldIDs.DefaultWorkflow] = GetId(args.SiteConfig.Site.Defaults.DatasourceWorkflow);
             standardValues[FieldIDs.EnableItemFallback] = args.SiteConfig.Site.Defaults.LanguageFallback ? "1" : "0";
+            foreach (var field in component.Fields)
+            {
+                if (!string.IsNullOrEmpty(field.Default))
+                    standardValues[field.Name] = field.Default;
+            }
             standardValues.Editing.EndEdit();
             SetDefaultFields(standardValues);
 
-            //Create Datasource Folder
-            var folderId = args.GetUniqueID("component_datasource_folder", component.Name);
-            Item folderTemplate = Database.GetItem(folderId);
 
-            if (folderTemplate == null)
+            //Folder
             {
-                var folder = Database.GetItem(GetSite(args).DatasourceTemplatePath + "/" + component.Category);
-                folderTemplate = folder.Add(component.Name + " Folder", new TemplateID(Sitecore.TemplateIDs.Template), folderId);
-            }
-            folderTemplate.Editing.BeginEdit();
-            folderTemplate[FieldIDs.Icon] = "office/32x32/folder_window.png";
-            folderTemplate.Editing.EndEdit();
-            SetDefaultFields(folderTemplate);
+                //Create Datasource Folder
+                var folderId = args.GetUniqueID("component_datasource_folder", component.Name);
+                Item folderTemplate = Database.GetItem(folderId);
 
-            // Create __Standard Values if not exists
-            var stdfolderid = args.GetUniqueID("component_datasource_folder", component.Name + "/__Standard Values");
-            var standardValuesFolder = Database.GetItem(stdfolderid);
-            if (standardValuesFolder == null)
-            {
-                standardValuesFolder = folderTemplate.Add("__Standard Values", new TemplateID(folderTemplate.ID), stdfolderid);
+                if (folderTemplate == null)
+                {
+                    var folder = Database.GetItem(GetSite(args).DatasourceTemplatePath + "/" + component.Category);
+                    folderTemplate = folder.Add(component.Name + " Folder", new TemplateID(Sitecore.TemplateIDs.Template), folderId);
+                }
+                folderTemplate.Editing.BeginEdit();
+                folderTemplate[FieldIDs.Icon] = "office/32x32/folder_window.png";
+                folderTemplate.Editing.EndEdit();
+                SetDefaultFields(folderTemplate);
+
+                // Create __Standard Values if not exists
+                var stdfolderid = args.GetUniqueID("component_datasource_folder", component.Name + "/__Standard Values");
+                var standardValuesFolder = Database.GetItem(stdfolderid);
+                if (standardValuesFolder == null)
+                {
+                    standardValuesFolder = folderTemplate.Add("__Standard Values", new TemplateID(folderTemplate.ID), stdfolderid);
+                    folderTemplate.Editing.BeginEdit();
+                    folderTemplate[FieldIDs.StandardValues] = stdfolderid.ToString();
+                    folderTemplate.Editing.EndEdit();
+                }
+                standardValuesFolder.Editing.BeginEdit();
+                standardValuesFolder["__Masters"] = template.ID.ToString() + "|" + folderTemplate.ID.ToString();
+                standardValuesFolder.Editing.EndEdit();
+
+                SetDefaultFields(standardValuesFolder);
             }
-            standardValuesFolder.Editing.BeginEdit();
-            standardValuesFolder["__Masters"] = template.ID.ToString() + "|" + folderTemplate.ID.ToString();
-            standardValuesFolder.Editing.EndEdit();
-            SetDefaultFields(standardValuesFolder);
         }
 
     }

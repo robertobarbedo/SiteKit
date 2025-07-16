@@ -29,8 +29,10 @@ namespace SiteKit.Handlers
                     return;
 
                 //only fire when log get empty
-                if (string.IsNullOrWhiteSpace(sourceItem["Log"]))
-                    AutoManager.Run(sourceItem.Name);
+                if (sourceItem["Log"] == "deploy" || string.IsNullOrEmpty(sourceItem["Log"]))
+                    AutoManager.Run(sourceItem.Name, AutoManagerActions.ValidateAndDeploy);
+                else if (sourceItem["Log"] == "validate")
+                    AutoManager.Run(sourceItem.Name, AutoManagerActions.Validate);
             }
             catch (Exception ex)
             {

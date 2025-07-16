@@ -22,43 +22,59 @@
           "fields": {
             "type": "array",
             "description": "Page type fields",
-            "items": {
-              "type": "object",
-              "required": ["name", "type"],
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "Field name",
-                  "minLength": 1,
-                  "pattern": "^[A-Z][a-zA-Z0-9]*([A-Z][a-zA-Z0-9]*)*$"
+                          "items": {
+                "type": "object",
+                "required": ["name", "type"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Field name",
+                    "minLength": 1,
+                    "pattern": "^[A-Z][a-zA-Z0-9]*([A-Z][a-zA-Z0-9]*)*$"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Field type from supported Sitecore field types",
+                    "enum": [
+                      "Single-Line Text",
+                      "Date",
+                      "DateTime", 
+                      "Checkbox",
+                      "File",
+                      "Image",
+                      "Integer",
+                      "Multi-Line Text",
+                      "Number",
+                      "Rich Text",
+                      "Checklist",
+                      "Droplist",
+                      "Multilist",
+                      "Treelist",
+                      "Taglist",
+                      "Multiroot Treelist",
+                      "Droplink",
+                      "General Link"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "Field source configuration",
+                    "minLength": 1
+                  },
+                  "default": {
+                    "type": "string",
+                    "description": "Default field value",
+                    "minLength": 1
+                  },
+                  "section": {
+                    "type": "string",
+                    "description": "Field section grouping",
+                    "minLength": 1,
+                    "examples": ["Content", "Data", "Configuration"]
+                  }
                 },
-                "type": {
-                  "type": "string",
-                  "description": "Field type from supported Sitecore field types",
-                  "enum": [
-                    "Single-Line Text",
-                    "Date",
-                    "DateTime", 
-                    "Checkbox",
-                    "File",
-                    "Image",
-                    "Integer",
-                    "Multi-Line Text",
-                    "Number",
-                    "Rich Text",
-                    "Checklist",
-                    "Droplist",
-                    "Multilist",
-                    "Treelist",
-                    "Taglist",
-                    "Multiroot Treelist",
-                    "Droplink",
-                    "General Link"
-                  ]
-                }
-              },
-              "additionalProperties": false
-            }
+                "additionalProperties": false
+              }
           },
           "standardvalues": {
             "type": "array",
@@ -227,6 +243,22 @@
                       "Droplink",
                       "General Link"
                     ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "Field source configuration",
+                    "minLength": 1
+                  },
+                  "default": {
+                    "type": "string",
+                    "description": "Default field value",
+                    "minLength": 1
+                  },
+                  "section": {
+                    "type": "string",
+                    "description": "Field section grouping",
+                    "minLength": 1,
+                    "examples": ["Content", "Data", "Configuration"]
                   }
                 },
                 "additionalProperties": false
@@ -259,6 +291,12 @@
             "minLength": 1,
             "pattern": "^[A-Z][a-z0-9]*( [A-Z][a-z0-9]*)*$",
             "examples": ["Page Structure", "Page Content", "Navigation"]
+          },
+          "icon": {
+            "type": "string",
+            "description": "Component icon path or identifier",
+            "examples": ["Office/32x32/link.png"],
+            "minLength": 1
           },
           "rendering": {
             "type": "array",
@@ -355,6 +393,22 @@
                     "Droplink",
                     "General Link"
                   ]
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Field source configuration",
+                  "minLength": 1
+                },
+                "default": {
+                  "type": "string",
+                  "description": "Default field value",
+                  "minLength": 1
+                },
+                "section": {
+                  "type": "string",
+                  "description": "Field section grouping",
+                  "minLength": 1,
+                  "examples": ["Content", "Data", "Configuration"]
                 }
               },
               "additionalProperties": false

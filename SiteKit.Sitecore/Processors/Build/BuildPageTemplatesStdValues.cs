@@ -40,6 +40,14 @@ namespace SiteKit.Processors
             standardValues.Editing.BeginEdit();
             standardValues[FieldIDs.DefaultWorkflow] = GetId(args.SiteConfig.Site.Defaults.PageWorkflow);
             standardValues[FieldIDs.EnableItemFallback] = args.SiteConfig.Site.Defaults.LanguageFallback ? "1" : "0";
+            if (pagetype.Fields != null)
+            {
+                foreach (var field in pagetype.Fields)
+                {
+                    if (!string.IsNullOrEmpty(field.Default))
+                        standardValues[field.Name] = field.Default;
+                }
+            }
             standardValues.Editing.EndEdit();
             SetDefaultFields(standardValues);
 

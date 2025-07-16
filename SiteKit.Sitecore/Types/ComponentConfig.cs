@@ -11,6 +11,7 @@ namespace SiteKit.Types
     {
         public string Name { get; set; }
         public string Category { get; set; }
+        public string Icon { get; set; }
         public List<string> Variants { get; set; }
         public List<FieldDefinition> Fields { get; set; }
         public List<ParameterDefinition> Parameters { get; set; }

@@ -43,6 +43,9 @@ public class Program
         // Add deploy command
         rootCommand.AddCommand(CreateSiteKitCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
 
+        // Add validate command
+        rootCommand.AddCommand(CreateValidateCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
+
         // Add init command
         rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, verboseOption));
 
@@ -116,6 +119,55 @@ public class Program
         return command;
     }
 
+    private static Command CreateValidateCommand(ServiceProvider serviceProvider, ILogger<Program> logger, 
+        Option<string> siteOption, Option<string> environmentOption, Option<bool> verboseOption)
+    {
+        var command = new Command("validate", "Validate YAML files against Sitecore")
+        {
+            siteOption,
+            environmentOption,
+            verboseOption
+        };
+
+        command.SetHandler(async (site, environment, verbose) =>
+        {
+            // Create service provider with correct verbose setting
+            var services = new ServiceCollection();
+            ConfigureServices(services, verbose);
+            var verboseServiceProvider = services.BuildServiceProvider();
+            var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
+            
+            var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
+
+            if (verbose)
+            {
+                verboseLogger.LogInformation("Verbose mode enabled");
+                verboseLogger.LogInformation($"Starting validation for site: {site}, environment: {environment}");
+            }
+
+            try
+            {
+                await siteKitService.ValidateAsync(site, environment, verbose);
+                if (!verbose)
+                {
+                    // Only show essential completion message in non-verbose mode
+                    //Console.WriteLine("Validation completed successfully");
+                }
+                else
+                {
+                    verboseLogger.LogInformation("Validation Finished");
+                }
+            }
+            catch (Exception ex)
+            {
+                verboseLogger.LogError(ex, "Validation failed");
+                Environment.Exit(1);
+            }
+        }, siteOption, environmentOption, verboseOption);
+
+        return command;
+    }
+
     private static Command CreateInitCommand(ServiceProvider serviceProvider, ILogger<Program> logger, Option<bool> verboseOption)
     {
         var tenantOption = new Option<string>(
@@ -182,6 +234,7 @@ public class Program
 public interface ISiteKitService
 {
     Task DeployAsync(string siteName, string environment, bool verbose);
+    Task ValidateAsync(string siteName, string environment, bool verbose);
     Task InitializeAsync(string tenant, string site, bool verbose);
 }
 
@@ -317,7 +370,40 @@ public class SiteKitService : ISiteKitService
         await ProcessYamlFilesAsync(endpoint, dir, siteName, parentId, parentPath, templateId, verbose);
 
         // Update and retrieve log
-        await UpdateLogAsync(endpoint, siteName, verbose);
+        await UpdateLogAsync(endpoint, siteName, "deploy", verbose);
+        var logValue = await GetLogValueAsync(endpoint, siteName, verbose);
+
+        // Always show log value regardless of verbose mode
+        if (!string.IsNullOrEmpty(logValue))
+        {
+            Console.WriteLine($"Log value: {logValue}");
+        }
+    }
+
+    public async Task ValidateAsync(string siteName, string environment, bool verbose)
+    {
+        var dir = Directory.GetCurrentDirectory();
+        string accessToken = await GetAccessTokenAsync(dir, environment, verbose);
+
+        var endpoint = GetEndpointForEnvironment(environment);
+        var parentPath = $"/sitecore/system/Modules/SiteKit/{siteName}";
+        var templateId = "ED55F363-5614-48C4-8F90-573535CBC6E3";
+
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+
+        // Get parent ID
+        var parentId = await GetParentIdAsync(endpoint, parentPath, verbose);
+        if (string.IsNullOrEmpty(parentId))
+        {
+            throw new InvalidOperationException($"Could not find parent item at path: {parentPath}");
+        }
+
+        // Process YAML files
+        await ProcessYamlFilesAsync(endpoint, dir, siteName, parentId, parentPath, templateId, verbose);
+
+        // Update and retrieve log
+        await UpdateLogAsync(endpoint, siteName, "validate", verbose);
         var logValue = await GetLogValueAsync(endpoint, siteName, verbose);
 
         // Always show log value regardless of verbose mode
@@ -538,7 +624,7 @@ mutation {{
         }
     }
 
-    private async Task UpdateLogAsync(string endpoint, string siteName, bool verbose)
+    private async Task UpdateLogAsync(string endpoint, string siteName, string logValue, bool verbose)
     {
         var updateLogMutation = $@"
 mutation {{
@@ -548,7 +634,7 @@ mutation {{
       path: ""/sitecore/system/modules/sitekit/{siteName}""
       language: ""en""
       fields: [
-        {{ name: ""Log"", value: """" }}
+        {{ name: ""Log"", value: ""{logValue}"" }}
       ]
     }}
   ) {{
@@ -565,7 +651,7 @@ mutation {{
 
         if (verbose)
         {
-            _logger.LogDebug("Updating Log field to empty");
+            _logger.LogDebug($"Updating Log field to: {logValue}");
         }
 
         var response = await _httpClient.PostAsync(endpoint, content);

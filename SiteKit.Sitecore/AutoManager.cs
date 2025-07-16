@@ -2,16 +2,12 @@
 using Sitecore.Diagnostics;
 using Sitecore.Pipelines;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SiteKit
 {
     public static class AutoManager
     {
-        public static string Run(string siteName)
+        public static string Run(string siteName, AutoManagerActions action)
         {
             string log = "";
             try
@@ -19,13 +15,14 @@ namespace SiteKit
                 // First run validation pipeline
                 var validationArgs = new AutoArgs(siteName);
                 CorePipeline.Run("validateYamlData", validationArgs);
-                
+
                 // Check if validation passed
                 if (validationArgs.IsValid)
                 {
                     // If validation passed, run build pipeline
-                    CorePipeline.Run("buildItems", new AutoArgs(siteName));
-                    log = "ok;";
+                    if (action == AutoManagerActions.ValidateAndDeploy)
+                        CorePipeline.Run("buildItems", new AutoArgs(siteName));
+                    log = action == AutoManagerActions.ValidateAndDeploy ? "ok;" : "valid;";
                 }
                 else
                 {
@@ -51,5 +48,11 @@ namespace SiteKit
 
             return log;
         }
+    }
+
+    public enum AutoManagerActions
+    {
+        ValidateAndDeploy,
+        Validate
     }
 }

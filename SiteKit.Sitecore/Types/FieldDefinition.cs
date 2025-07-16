@@ -12,5 +12,6 @@ namespace SiteKit.Types
         public string Type { get; set; }
         public string Source { get; set; }
         public string Default { get; set; }
+        public string Section { get; set; }
     }
 }
