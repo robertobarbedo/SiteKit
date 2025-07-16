@@ -260,12 +260,12 @@ public class SiteKitService : ISiteKitService
             
             if (string.IsNullOrEmpty(response) || response.Trim().ToLowerInvariant() == "y" || response.Trim().ToLowerInvariant() == "yes")
             {
-                Console.WriteLine("-");
+                Console.WriteLine("");
                 Console.WriteLine("A config file 'app_config/include/SiteKit.config' is added.");
                 Console.WriteLine("A bin 'app_data/sitekit/SiteKit.dll' is added.");
                 Console.WriteLine("A bin 'app_data/sitekit/YamlDotNet.dll' is added.");
                 Console.WriteLine("You need to edit your solution to include these files for XM Cloud Deployment.");
-                Console.WriteLine("-");
+                Console.WriteLine("");
                 addToSolution = true;
             }
             else
@@ -287,9 +287,9 @@ public class SiteKitService : ISiteKitService
             if (string.IsNullOrEmpty(deployResponse) || deployResponse.Trim().ToLowerInvariant() == "y" || deployResponse.Trim().ToLowerInvariant() == "yes")
             {
                 deployToDocker = true;
-                Console.WriteLine("-");
+                Console.WriteLine("");
                 Console.WriteLine("The configs and bins were added to your docker/deploy folder and should be ready to use with the 'containered' CM.");
-                Console.WriteLine("-");
+                Console.WriteLine("");
             }
             else
             {
