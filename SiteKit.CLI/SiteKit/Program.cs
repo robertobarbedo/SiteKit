@@ -252,59 +252,59 @@ public class SiteKitService : ISiteKitService
         bool deployToDocker = false;
         
         // Find solution file
-        var solutionFile = FindSolutionFile(currentDir, verbose);
-        if (!string.IsNullOrEmpty(solutionFile))
-        {
-            Console.Write($"Do you want to add the client package(dll and config) in solution {solutionFile}? (Y/n): ");
-            var response = Console.ReadLine();
-            
-            if (string.IsNullOrEmpty(response) || response.Trim().ToLowerInvariant() == "y" || response.Trim().ToLowerInvariant() == "yes")
-            {
-                Console.WriteLine("");
-                Console.WriteLine("A config file 'app_config/include/SiteKit.config' is added.");
-                Console.WriteLine("A bin 'app_data/sitekit/SiteKit.dll' is added.");
-                Console.WriteLine("A bin 'app_data/sitekit/YamlDotNet.dll' is added.");
-                Console.WriteLine("You need to edit your solution to include these files for XM Cloud Deployment.");
-                Console.WriteLine("");
-                addToSolution = true;
-            }
-            else
-            {
-                if (verbose)
-                {
-                    _logger.LogInformation("User chose not to add client package to solution");
-                }
-            }
-        }
-
-        // Find docker deploy folder
-        var dockerDeployFolder = FindDockerDeployFolder(currentDir, verbose);
-        if (!string.IsNullOrEmpty(dockerDeployFolder))
-        {
-            Console.Write($"Do you want to deploy the package content(dll and config) to the docker deploy folder {dockerDeployFolder}? (Y/n): ");
-            var deployResponse = Console.ReadLine();
-            
-            if (string.IsNullOrEmpty(deployResponse) || deployResponse.Trim().ToLowerInvariant() == "y" || deployResponse.Trim().ToLowerInvariant() == "yes")
-            {
-                deployToDocker = true;
-                Console.WriteLine("");
-                Console.WriteLine("The configs and bins were added to your docker/deploy folder and should be ready to use with the 'containered' CM.");
-                Console.WriteLine("");
-            }
-            else
-            {
-                if (verbose)
-                {
-                    _logger.LogInformation("User chose not to deploy package content to docker deploy folder");
-                }
-            }
-        }
-
-        // If either answer was YES, download and extract the package
-        if (addToSolution || deployToDocker)
-        {
-            await DownloadAndExtractPackageAsync(solutionFile, dockerDeployFolder, addToSolution, deployToDocker, verbose);
-        }
+        //var solutionFile = FindSolutionFile(currentDir, verbose);
+        //if (!string.IsNullOrEmpty(solutionFile))
+        //{
+        //    Console.Write($"Do you want to add the client package(dll and config) in solution {solutionFile}? (Y/n): ");
+        //    var response = Console.ReadLine();
+        //    
+        //    if (string.IsNullOrEmpty(response) || response.Trim().ToLowerInvariant() == "y" || response.Trim().ToLowerInvariant() == "yes")
+        //    {
+        //        Console.WriteLine("");
+        //        Console.WriteLine("A config file 'app_config/include/SiteKit.config' is added.");
+        //        Console.WriteLine("A bin 'app_data/sitekit/SiteKit.dll' is added.");
+        //        Console.WriteLine("A bin 'app_data/sitekit/YamlDotNet.dll' is added.");
+        //        Console.WriteLine("You need to edit your solution to include these files for XM Cloud Deployment.");
+        //        Console.WriteLine("");
+        //        addToSolution = true;
+        //    }
+        //    else
+        //    {
+        //        if (verbose)
+        //        {
+        //            _logger.LogInformation("User chose not to add client package to solution");
+        //        }
+        //    }
+        //}
+        //
+        //// Find docker deploy folder
+        //var dockerDeployFolder = FindDockerDeployFolder(currentDir, verbose);
+        //if (!string.IsNullOrEmpty(dockerDeployFolder))
+        //{
+        //    Console.Write($"Do you want to deploy the package content(dll and config) to the docker deploy folder {dockerDeployFolder}? (Y/n): ");
+        //    var deployResponse = Console.ReadLine();
+        //    
+        //    if (string.IsNullOrEmpty(deployResponse) || deployResponse.Trim().ToLowerInvariant() == "y" || deployResponse.Trim().ToLowerInvariant() == "yes")
+        //    {
+        //        deployToDocker = true;
+        //        Console.WriteLine("");
+        //        Console.WriteLine("The configs and bins were added to your docker/deploy folder and should be ready to use with the 'containered' CM.");
+        //        Console.WriteLine("");
+        //    }
+        //    else
+        //    {
+        //        if (verbose)
+        //        {
+        //            _logger.LogInformation("User chose not to deploy package content to docker deploy folder");
+        //        }
+        //    }
+        //}
+        //
+        //// If either answer was YES, download and extract the package
+        //if (addToSolution || deployToDocker)
+        //{
+        //    await DownloadAndExtractPackageAsync(solutionFile, dockerDeployFolder, addToSolution, deployToDocker, verbose);
+        //}
 
         // Create .sitekit folder if it doesn't exist
         if (!Directory.Exists(siteKitDir))
@@ -458,129 +458,129 @@ public class SiteKitService : ISiteKitService
         return string.Empty;
     }
 
-    private async Task DownloadAndExtractPackageAsync(string solutionFile, string dockerDeployFolder, bool addToSolution, bool deployToDocker, bool verbose)
-    {
-        var tempDir = Path.Combine(Path.GetTempPath(), "SiteKit_Package_" + Guid.NewGuid().ToString("N"));
-        
-        try
-        {
-            Directory.CreateDirectory(tempDir);
-            
-            if (verbose)
-            {
-                _logger.LogInformation($"Created temp directory: {tempDir}");
-            }
-
-            // Download the package
-            var packageUrl = "https://github.com/robertobarbedo/SiteKit/raw/refs/heads/main/Releases/SiteKit_Client_Package.zip";
-            var packageZipPath = Path.Combine(tempDir, "SiteKit_Client_Package.zip");
-            
-            if (verbose)
-            {
-                _logger.LogInformation($"Downloading package from: {packageUrl}");
-            }
-
-            using (var response = await _httpClient.GetAsync(packageUrl))
-            {
-                response.EnsureSuccessStatusCode();
-                await using var fileStream = File.Create(packageZipPath);
-                await response.Content.CopyToAsync(fileStream);
-            }
-
-            if (verbose)
-            {
-                _logger.LogInformation($"Downloaded package to: {packageZipPath}");
-            }
-
-            // Extract the outer zip file
-            System.IO.Compression.ZipFile.ExtractToDirectory(packageZipPath, tempDir);
-            
-            if (verbose)
-            {
-                _logger.LogInformation("Extracted outer zip file");
-            }
-
-            // Extract the inner package.zip
-            var innerZipPath = Path.Combine(tempDir, "package.zip");
-            if (File.Exists(innerZipPath))
-            {
-                System.IO.Compression.ZipFile.ExtractToDirectory(innerZipPath, tempDir);
-                
-                if (verbose)
-                {
-                    _logger.LogInformation("Extracted inner package.zip");
-                }
-
-                // Copy files to respective locations
-                var filesDir = Path.Combine(tempDir, "files");
-                if (Directory.Exists(filesDir))
-                {
-                    if (addToSolution && !string.IsNullOrEmpty(solutionFile))
-                    {
-                        var platformDir = Path.Combine(Path.GetDirectoryName(solutionFile)!, "Platform");
-                        CopyDirectory(filesDir, platformDir, verbose);
-                        
-                        if (verbose)
-                        {
-                            _logger.LogInformation($"Copied files to solution platform directory: {platformDir}");
-                        }
-                    }
-
-                    if (deployToDocker && !string.IsNullOrEmpty(dockerDeployFolder))
-                    {
-                        var dockerPlatformDir = Path.Combine(dockerDeployFolder, "Platform");
-                        CopyDirectory(filesDir, dockerPlatformDir, verbose);
-                        
-                        if (verbose)
-                        {
-                            _logger.LogInformation($"Copied files to docker deploy platform directory: {dockerPlatformDir}");
-                        }
-                    }
-                }
-                else
-                {
-                    if (verbose)
-                    {
-                        _logger.LogWarning($"Files directory not found: {filesDir}");
-                    }
-                }
-            }
-            else
-            {
-                if (verbose)
-                {
-                    _logger.LogWarning($"Inner package.zip not found: {innerZipPath}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to download and extract package");
-            throw;
-        }
-        finally
-        {
-            // Clean up temp directory
-            if (Directory.Exists(tempDir))
-            {
-                try
-                {
-                    Directory.Delete(tempDir, true);
-                    if (verbose)
-                    {
-                        _logger.LogInformation($"Cleaned up temp directory: {tempDir}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (verbose)
-                    {
-                        _logger.LogWarning(ex, $"Failed to clean up temp directory: {tempDir}");
-                    }
-                }
-            }
-        }
-    }
+    //private async Task DownloadAndExtractPackageAsync(string solutionFile, string dockerDeployFolder, bool addToSolution, bool deployToDocker, bool verbose)
+    //{
+    //    var tempDir = Path.Combine(Path.GetTempPath(), "SiteKit_Package_" + Guid.NewGuid().ToString("N"));
+    //    
+    //    try
+    //    {
+    //        Directory.CreateDirectory(tempDir);
+    //        
+    //        if (verbose)
+    //        {
+    //            _logger.LogInformation($"Created temp directory: {tempDir}");
+    //        }
+    //
+    //        // Download the package
+    //        var packageUrl = "https://github.com/robertobarbedo/SiteKit/raw/refs/heads/main/Releases/SiteKit_Client_Package.zip";
+    //        var packageZipPath = Path.Combine(tempDir, "SiteKit_Client_Package.zip");
+    //        
+    //        if (verbose)
+    //        {
+    //            _logger.LogInformation($"Downloading package from: {packageUrl}");
+    //        }
+    //
+    //        using (var response = await _httpClient.GetAsync(packageUrl))
+    //        {
+    //            response.EnsureSuccessStatusCode();
+    //            await using var fileStream = File.Create(packageZipPath);
+    //            await response.Content.CopyToAsync(fileStream);
+    //        }
+    //
+    //        if (verbose)
+    //        {
+    //            _logger.LogInformation($"Downloaded package to: {packageZipPath}");
+    //        }
+    //
+    //        // Extract the outer zip file
+    //        System.IO.Compression.ZipFile.ExtractToDirectory(packageZipPath, tempDir);
+    //        
+    //        if (verbose)
+    //        {
+    //            _logger.LogInformation("Extracted outer zip file");
+    //        }
+    //
+    //        // Extract the inner package.zip
+    //        var innerZipPath = Path.Combine(tempDir, "package.zip");
+    //        if (File.Exists(innerZipPath))
+    //        {
+    //            System.IO.Compression.ZipFile.ExtractToDirectory(innerZipPath, tempDir);
+    //            
+    //            if (verbose)
+    //            {
+    //                _logger.LogInformation("Extracted inner package.zip");
+    //            }
+    //
+    //            // Copy files to respective locations
+    //            var filesDir = Path.Combine(tempDir, "files");
+    //            if (Directory.Exists(filesDir))
+    //            {
+    //                if (addToSolution && !string.IsNullOrEmpty(solutionFile))
+    //                {
+    //                    var platformDir = Path.Combine(Path.GetDirectoryName(solutionFile)!, "Platform");
+    //                    CopyDirectory(filesDir, platformDir, verbose);
+    //                    
+    //                    if (verbose)
+    //                    {
+    //                        _logger.LogInformation($"Copied files to solution platform directory: {platformDir}");
+    //                    }
+    //                }
+    //
+    //                if (deployToDocker && !string.IsNullOrEmpty(dockerDeployFolder))
+    //                {
+    //                    var dockerPlatformDir = Path.Combine(dockerDeployFolder, "Platform");
+    //                    CopyDirectory(filesDir, dockerPlatformDir, verbose);
+    //                    
+    //                    if (verbose)
+    //                    {
+    //                        _logger.LogInformation($"Copied files to docker deploy platform directory: {dockerPlatformDir}");
+    //                    }
+    //                }
+    //            }
+    //            else
+    //            {
+    //                if (verbose)
+    //                {
+    //                    _logger.LogWarning($"Files directory not found: {filesDir}");
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            if (verbose)
+    //            {
+    //                _logger.LogWarning($"Inner package.zip not found: {innerZipPath}");
+    //            }
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        _logger.LogError(ex, "Failed to download and extract package");
+    //        throw;
+    //    }
+    //    finally
+    //    {
+    //        // Clean up temp directory
+    //        if (Directory.Exists(tempDir))
+    //        {
+    //            try
+    //            {
+    //                Directory.Delete(tempDir, true);
+    //                if (verbose)
+    //                {
+    //                    _logger.LogInformation($"Cleaned up temp directory: {tempDir}");
+    //                }
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                if (verbose)
+    //                {
+    //                    _logger.LogWarning(ex, $"Failed to clean up temp directory: {tempDir}");
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 
     private void CopyDirectory(string sourceDir, string destinationDir, bool verbose)
     {

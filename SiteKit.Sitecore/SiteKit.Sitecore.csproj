@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="AutoArgs.cs" />
     <Compile Include="AutoManager.cs" />
+    <Compile Include="Initialize\CreateTemplates.cs" />
     <Compile Include="Processors\AutoBase.cs" />
     <Compile Include="Processors\Build\BuildComponentCategoryFolders.cs" />
     <Compile Include="Processors\Build\BuildPageTemplatesStdValuesLayout.cs" />
