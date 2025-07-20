@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SiteKit.CLI.Services.Deploy
+namespace SiteKit.CLI.Services.Shared
 {
     public class _CompositionResolver : IRun
     {

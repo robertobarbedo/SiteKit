@@ -1,5 +1,9 @@
 using Microsoft.Extensions.Logging;
 using SiteKit.CLI.Services;
+using SiteKit.CLI.Services.Deploy;
+using SiteKit.CLI.Services.Shared;
+using SiteKit.CLI.Services.Validate;
+using System.Text.Json;
 
 namespace SiteKit.CLI.Services.Validate;
 
@@ -10,7 +14,7 @@ public interface IValidateService
 
 public class ValidateService : BaseService, IValidateService
 {
-    public ValidateService(HttpClient httpClient, ILogger<ValidateService> logger) 
+    public ValidateService(HttpClient httpClient, ILogger<ValidateService> logger)
         : base(httpClient, logger)
     {
     }
@@ -21,85 +25,31 @@ public class ValidateService : BaseService, IValidateService
         string accessToken = await GetAccessTokenAsync(dir, verbose);
         string endpoint = await GetEndpointForEnvironment(dir, environment, verbose);
 
-        var parentPath = $"/sitecore/system/Modules/SiteKit/{siteName}";
-        var templateId = "ED55F363-5614-48C4-8F90-573535CBC6E3";
+        AutoArgs args = new AutoArgs(siteName);
+        args.Endpoint = endpoint;
+        args.AccessToken = accessToken;
+        args.Directory = dir;
 
-        _httpClient.DefaultRequestHeaders.Clear();
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
-        // Get parent ID
-        var parentId = await GetParentIdAsync(endpoint, parentPath, verbose);
-        if (string.IsNullOrEmpty(parentId))
+        var graphQLService = new GraphQLService(_httpClient, _logger);
+
+        new _ReadYaml().Run(args);
+
+        if (args.IsValid)
+            new _LoadYaml().Run(args);
+
+        if (args.IsValid)
+            new _CompositionResolver().Run(args);
+
+        if (args.IsValid)
         {
-            throw new InvalidOperationException($"Could not find parent item at path: {parentPath}");
+            Console.WriteLine("Files all validate successfully.");
         }
-
-        // Process YAML files (for validation, this would be similar to deploy but without actual changes)
-        await ProcessYamlFilesForValidationAsync(endpoint, dir, siteName, parentId, parentPath, templateId, verbose);
-
-        // Update and retrieve log
-        await UpdateLogAsync(endpoint, siteName, "validate", verbose);
-        var logValue = await GetLogValueAsync(endpoint, siteName, verbose);
-
-        // Always show log value regardless of verbose mode
-        if (!string.IsNullOrEmpty(logValue))
+        else
         {
-            Console.WriteLine($"Log value: {logValue}");
-        }
-    }
-
-    private async Task ProcessYamlFilesForValidationAsync(string endpoint, string dir, string siteName, string parentId, string parentPath, string templateId, bool verbose)
-    {
-        var yamlDirectory = Path.Combine(dir, ".sitekit", siteName);
-
-        if (!Directory.Exists(yamlDirectory))
-        {
-            if (verbose)
-            {
-                _logger.LogDebug($"YAML directory not found: {yamlDirectory}");
-            }
-            return;
-        }
-
-        var yamlFiles = Directory.GetFiles(yamlDirectory, "*.yaml");
-
-        if (yamlFiles.Length == 0)
-        {
-            if (verbose)
-            {
-                _logger.LogDebug($"No YAML files found in: {yamlDirectory}");
-            }
-            return;
-        }
-
-        foreach (var file in yamlFiles)
-        {
-            var fileName = Path.GetFileNameWithoutExtension(file);
-            var yamlContent = await File.ReadAllTextAsync(file);
-
-            if (verbose)
-            {
-                _logger.LogDebug($"Validating YAML file: {fileName}");
-                _logger.LogDebug($"File size: {yamlContent.Length} characters");
-            }
-
-            // Here you would add actual validation logic
-            // For now, we're just logging the files being processed
-            await ValidateYamlContentAsync(fileName, yamlContent, verbose);
+            Console.WriteLine("Error:");
+            Console.WriteLine(args.ValidationMessage);
         }
     }
 
-    private async Task ValidateYamlContentAsync(string fileName, string yamlContent, bool verbose)
-    {
-        // Placeholder for actual validation logic
-        // This could include schema validation, format checking, etc.
-        
-        if (verbose)
-        {
-            _logger.LogDebug($"Validated {fileName}: Content appears to be well-formed YAML");
-        }
-
-        // Simulate async operation
-        await Task.Delay(1);
-    }
 }

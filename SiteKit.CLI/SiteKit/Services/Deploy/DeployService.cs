@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SiteKit.CLI.Services;
 using SiteKit.CLI.Services.Deploy;
+using SiteKit.CLI.Services.Shared;
 using System.Text.Json;
 
 namespace SiteKit.CLI.Services.Deploy;
@@ -22,9 +23,6 @@ public class DeployService : BaseService, IDeployService
         var dir = Directory.GetCurrentDirectory();
         string accessToken = await GetAccessTokenAsync(dir, verbose);
         string endpoint = await GetEndpointForEnvironment(dir, environment, verbose);
-
-        //_httpClient.DefaultRequestHeaders.Clear();
-        //_httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
         AutoArgs args = new AutoArgs(siteName);
         args.Endpoint = endpoint;

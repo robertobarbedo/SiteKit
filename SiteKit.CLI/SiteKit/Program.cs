@@ -56,7 +56,7 @@ public class Program
         rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, verboseOption));
 
         //debug
-        args = (new List<String>() { "deploy", "-s", "NewSite" }).ToArray();
+        args = (new List<String>() { "validate", "-s", "NewSite" }).ToArray();
 
         return await rootCommand.InvokeAsync(args);
     }
@@ -77,6 +77,9 @@ public class Program
                 builder.AddFilter("System.Net.Http.HttpClient", LogLevel.Error);
             }
         });
+
+        // Register non-generic ILogger for BaseService compatibility
+        services.AddSingleton<ILogger>(provider => provider.GetService<ILoggerFactory>()!.CreateLogger("SiteKit.CLI"));
 
         services.AddHttpClient();
 
@@ -110,8 +113,8 @@ public class Program
 
             if (verbose)
             {
-                verboseLogger.LogInformation("Verbose mode enabled");
-                verboseLogger.LogInformation($"Starting deployment for site: {site}, environment: {environment}");
+                verboseLogger.LogDebug("Verbose mode enabled");
+                verboseLogger.LogDebug($"Starting deployment for site: {site}, environment: {environment}");
             }
 
             try

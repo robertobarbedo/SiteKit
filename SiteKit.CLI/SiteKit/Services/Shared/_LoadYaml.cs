@@ -2,7 +2,7 @@
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace SiteKit.CLI.Services.Deploy
+namespace SiteKit.CLI.Services.Shared
 {
     public class _LoadYaml: IRun
     {
