@@ -45,6 +45,7 @@ public class DeployService : BaseService, IDeployService
             new _BuildComponentDatasources(graphQLService, _logger).Run(args);
             new _BuildComponentDatasourcesStdValues(graphQLService, _logger).Run(args);
             new _BuildPageTemplates(graphQLService, _logger).Run(args);
+            new _BuildPageTemplatesStdValuesLayout(graphQLService, _logger, _httpClient).Run(args);
             new _BuildSharedDataFolders(graphQLService, _logger).Run(args);
             new _BuildRenderings(graphQLService, _logger).Run(args);
             new _BuildRenderingsPageContainers(graphQLService, _logger).Run(args);
