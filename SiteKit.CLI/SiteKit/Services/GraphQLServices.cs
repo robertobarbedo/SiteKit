@@ -11,6 +11,7 @@ public interface IGraphQLService
     Task<GraphQLTemplateResponse?> CreateTemplateAsync(string endpoint, string accessToken, string name, string parent, List<TemplateSection>? sections = null, bool verbose = false);
     Task<GraphQLTemplateResponse?> UpdateTemplateAsync(string endpoint, string accessToken, string templateId, string? name = null, List<UpdateTemplateSection>? sections = null, bool verbose = false);
     Task<bool> DeleteItemAsync(string endpoint, string accessToken, string path, bool permanently = false, bool verbose = false);
+    Task<GraphQLSiteResponse?> GetSiteAsync(string endpoint, string accessToken, string siteName, bool verbose = false);
 }
 
 public class GraphQLService : IGraphQLService
@@ -766,6 +767,107 @@ mutation {{
             throw;
         }
     }
+
+    public async Task<GraphQLSiteResponse?> GetSiteAsync(string endpoint, string accessToken, string siteName, bool verbose = false)
+    {
+        var query = $@"
+query {{
+    site(siteName: ""{siteName}"") {{
+        name
+        domain
+        rootPath
+        startPath
+        browserTitle
+        cacheHtml
+        cacheMedia
+        enablePreview
+    }}
+}}";
+
+        var requestBody = new { query };
+        var json = JsonSerializer.Serialize(requestBody);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+        // Set authorization header
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+
+        if (verbose)
+        {
+            _logger.LogDebug($"Fetching site configuration: {siteName}");
+        }
+
+        try
+        {
+            var response = await _httpClient.PostAsync(endpoint, content);
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            if (verbose)
+            {
+                _logger.LogDebug($"GraphQL response: {responseText}");
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var document = JsonDocument.Parse(responseText);
+            var root = document.RootElement;
+
+            // Check for GraphQL errors
+            if (root.TryGetProperty("errors", out var errors))
+            {
+                var errorMessage = errors.EnumerateArray().FirstOrDefault().GetProperty("message").GetString();
+                _logger.LogError($"GraphQL error: {errorMessage}");
+                return null;
+            }
+
+            // Parse the successful response
+            if (root.TryGetProperty("data", out var data) &&
+                data.TryGetProperty("site", out var site) &&
+                site.ValueKind != JsonValueKind.Null)
+            {
+                var siteResponse = new GraphQLSiteResponse
+                {
+                    Name = site.TryGetProperty("name", out var nameProp) ? nameProp.GetString() ?? string.Empty : string.Empty,
+                    Domain = site.TryGetProperty("domain", out var domainProp) ? domainProp.GetString() ?? string.Empty : string.Empty,
+                    RootPath = site.TryGetProperty("rootPath", out var rootPathProp) ? rootPathProp.GetString() ?? string.Empty : string.Empty,
+                    StartPath = site.TryGetProperty("startPath", out var startPathProp) ? startPathProp.GetString() ?? string.Empty : string.Empty,
+                    BrowserTitle = site.TryGetProperty("browserTitle", out var browserTitleProp) ? browserTitleProp.GetString() ?? string.Empty : string.Empty,
+                    CacheHtml = site.TryGetProperty("cacheHtml", out var cacheHtmlProp) ? cacheHtmlProp.GetBoolean() : false,
+                    CacheMedia = site.TryGetProperty("cacheMedia", out var cacheMediaProp) ? cacheMediaProp.GetBoolean() : false,
+                    EnablePreview = site.TryGetProperty("enablePreview", out var enablePreviewProp) ? enablePreviewProp.GetBoolean() : false
+                };
+
+                if (verbose)
+                {
+                    _logger.LogDebug($"Successfully retrieved site: {siteResponse.Name} (Domain: {siteResponse.Domain})");
+                }
+
+                return siteResponse;
+            }
+
+            if (verbose)
+            {
+                _logger.LogDebug($"Site not found: {siteName}");
+            }
+
+            return null;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, $"HTTP error when fetching site: {siteName}");
+            return null;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, $"JSON parsing error when fetching site: {siteName}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Unexpected error when fetching site: {siteName}");
+            throw;
+        }
+    }
 }
 
 public class GraphQLItemResponse
@@ -799,6 +901,18 @@ public class GraphQLTemplateField
 {
     public string Name { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
+}
+
+public class GraphQLSiteResponse
+{
+    public string Name { get; set; } = string.Empty;
+    public string Domain { get; set; } = string.Empty;
+    public string RootPath { get; set; } = string.Empty;
+    public string StartPath { get; set; } = string.Empty;
+    public string BrowserTitle { get; set; } = string.Empty;
+    public bool CacheHtml { get; set; } = false;
+    public bool CacheMedia { get; set; } = false;
+    public bool EnablePreview { get; set; } = false;
 }
 
 public class TemplateSection

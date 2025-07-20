@@ -33,10 +33,18 @@ public class DeployService : BaseService, IDeployService
 
         var graphQLService = new GraphQLService(_httpClient, _logger);
 
-        //new _ValidateSchema(new HttpClient(), _logger).Run(args);
+        // Pre Parsing Validation
+        new _ValidateSiteExistsInSitecore(graphQLService, _logger).Run(args);
+
+        // Parsing
         new _ReadYaml().Run(args);
         new _LoadYaml().Run(args);
         new _CompositionResolver().Run(args);
+
+        // Post Parsing Validation
+        new _ValidateSiteSettingsPaths(graphQLService, _logger).Run(args);
+        new _ValidatePageDefaultLayouts(_logger).Run(args);
+        new _ValidateCompositionComponents(_logger).Run(args);
 
         //deploy
         if (args.IsValid)

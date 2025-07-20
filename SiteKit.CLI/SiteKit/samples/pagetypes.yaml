@@ -11,7 +11,7 @@ pagetypes:
     layout:
       - component: One Column
         children: 
-          - component: One Columns
+          - component: One Column
 
     
     
