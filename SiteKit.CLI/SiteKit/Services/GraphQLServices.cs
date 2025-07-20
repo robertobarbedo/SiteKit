@@ -121,7 +121,7 @@ query {{
 
             if (verbose)
             {
-                _logger.LogWarning($"Item not found at path: {path}");
+                _logger.LogDebug($"Item not found at path: {path}");
             }
 
             return null;
@@ -216,7 +216,7 @@ mutation {{
 
             if (verbose)
             {
-                _logger.LogWarning($"Failed to create item '{name}' - unexpected response structure");
+                _logger.LogDebug($"Failed to create item '{name}' - unexpected response structure");
             }
 
             return null;
@@ -244,7 +244,7 @@ mutation {{
         {
             if (verbose)
             {
-                _logger.LogWarning("No fields provided for update operation");
+                _logger.LogDebug("No fields provided for update operation");
             }
             return null;
         }
@@ -343,7 +343,7 @@ mutation {{
 
             if (verbose)
             {
-                _logger.LogWarning($"Failed to update item '{pathOrId}' - unexpected response structure");
+                _logger.LogDebug($"Failed to update item '{pathOrId}' - unexpected response structure");
             }
 
             return null;
@@ -477,7 +477,7 @@ mutation {{
 
             if (verbose)
             {
-                _logger.LogWarning($"Failed to create template '{name}' - unexpected response structure");
+                _logger.LogDebug($"Failed to create template '{name}' - unexpected response structure");
             }
 
             return null;
@@ -655,7 +655,7 @@ mutation {{
 
             if (verbose)
             {
-                _logger.LogWarning($"Failed to update template '{templateId}' - unexpected response structure");
+                _logger.LogDebug($"Failed to update template '{templateId}' - unexpected response structure");
             }
 
             return null;
@@ -745,7 +745,7 @@ mutation {{
 
             if (verbose)
             {
-                _logger.LogWarning($"Failed to delete item '{path}' - unexpected response structure");
+                _logger.LogDebug($"Failed to delete item '{path}' - unexpected response structure");
             }
 
             return false;

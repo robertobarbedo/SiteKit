@@ -50,7 +50,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Create the datasource template if it doesn't exist
                 if (existingTemplate == null)
                 {
-                    _logger.LogInformation($"Creating datasource template: {component.Name} at path: {templatePath}");
+                    _logger.LogDebug($"Creating datasource template: {component.Name} at path: {templatePath}");
 
                     // Get the parent folder
                     var parentFolderPath = $"{site.DatasourceTemplatePath}/{component.Category}";
@@ -96,7 +96,7 @@ namespace SiteKit.CLI.Services.Deploy
                 else
                 {
                     templateId = existingTemplate.ItemId;
-                    _logger.LogInformation($"Using existing datasource template: {component.Name} (ID: {templateId})");
+                    _logger.LogDebug($"Using existing datasource template: {component.Name} (ID: {templateId})");
                 }
 
                 // Update template with icon if specified
@@ -165,11 +165,11 @@ namespace SiteKit.CLI.Services.Deploy
 
                         if (templateSections.Any())
                         {
-                            _logger.LogInformation($"After filtering existing fields, {templateSections.Sum(s => s.Fields?.Count ?? 0)} new fields will be added across {templateSections.Count} sections");
+                            _logger.LogDebug($"After filtering existing fields, {templateSections.Sum(s => s.Fields?.Count ?? 0)} new fields will be added across {templateSections.Count} sections");
                         }
                         else
                         {
-                            _logger.LogInformation($"All fields already exist in template: {component.Name}");
+                            _logger.LogDebug($"All fields already exist in template: {component.Name}");
                         }
                     }
 
@@ -183,7 +183,7 @@ namespace SiteKit.CLI.Services.Deploy
                         {
                             if (string.IsNullOrEmpty(section.Name))
                             {
-                                _logger.LogWarning("Skipping section with null or empty name");
+                                _logger.LogDebug("Skipping section with null or empty name");
                                 continue;
                             }
 
@@ -196,7 +196,7 @@ namespace SiteKit.CLI.Services.Deploy
                             if (existingSection == null)
                             {
                                 // Create new section
-                                _logger.LogInformation($"Creating template section: {section.Name}");
+                                _logger.LogDebug($"Creating template section: {section.Name}");
                                 var createdSectionId = await _graphQLService.CreateItemAsync(
                                     args.Endpoint,
                                     args.AccessToken,
@@ -219,7 +219,7 @@ namespace SiteKit.CLI.Services.Deploy
                             else
                             {
                                 sectionId = existingSection.ItemId;
-                                _logger.LogInformation($"Using existing template section: {section.Name} (ID: {sectionId})");
+                                _logger.LogDebug($"Using existing template section: {section.Name} (ID: {sectionId})");
                             }
 
                             // Create fields within this section
@@ -229,7 +229,7 @@ namespace SiteKit.CLI.Services.Deploy
                                 {
                                     if (string.IsNullOrEmpty(field.Name))
                                     {
-                                        _logger.LogWarning("Skipping field with null or empty name");
+                                        _logger.LogDebug("Skipping field with null or empty name");
                                         continue;
                                     }
 
@@ -239,7 +239,7 @@ namespace SiteKit.CLI.Services.Deploy
                                     if (existingField == null)
                                     {
                                         // Create new field
-                                        _logger.LogInformation($"Creating template field: {field.Name} in section {section.Name}");
+                                        _logger.LogDebug($"Creating template field: {field.Name} in section {section.Name}");
                                         var fieldId = await _graphQLService.CreateItemAsync(
                                             args.Endpoint,
                                             args.AccessToken,
@@ -272,7 +272,7 @@ namespace SiteKit.CLI.Services.Deploy
                                     else
                                     {
                                         // Update existing field type if needed
-                                        _logger.LogInformation($"Updating existing template field: {field.Name}");
+                                        _logger.LogDebug($"Updating existing template field: {field.Name}");
                                         if (!string.IsNullOrEmpty(field.Type))
                                         {
                                             var fieldFields = new Dictionary<string, string>
@@ -287,11 +287,11 @@ namespace SiteKit.CLI.Services.Deploy
                             }
                         }
 
-                        _logger.LogInformation($"Successfully processed template: {component.Name} - Created {sectionsCreated} sections and {fieldsCreated} fields");
+                        _logger.LogDebug($"Successfully processed template: {component.Name} - Created {sectionsCreated} sections and {fieldsCreated} fields");
                     }
                     else
                     {
-                        _logger.LogInformation($"No template sections to update for component: {component.Name}");
+                        _logger.LogDebug($"No template sections to update for component: {component.Name}");
                     }
                 }
 
@@ -301,7 +301,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Create folder template for datasource organization
                 await CreateFolderTemplateAsync(args, component, templateId, site);
 
-                _logger.LogInformation($"Successfully processed datasource template: {component.Name}");
+                _logger.LogDebug($"Successfully processed datasource template: {component.Name}");
             }
             catch (Exception ex)
             {
@@ -341,7 +341,7 @@ namespace SiteKit.CLI.Services.Deploy
                         await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, templateId, templateFields, verbose: true);
 
 
-                        _logger.LogInformation($"Created standard values for template: {component.Name}");
+                        _logger.LogDebug($"Created standard values for template: {component.Name}");
                     }
                 }
                 else
@@ -434,7 +434,7 @@ namespace SiteKit.CLI.Services.Deploy
                                 };
                                 await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, folderStandardValuesId, folderStandardValuesFields, verbose: true);
 
-                                _logger.LogInformation($"Created folder template: {folderTemplateName}");
+                                _logger.LogDebug($"Created folder template: {folderTemplateName}");
                             }
                         }
                     }

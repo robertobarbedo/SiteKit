@@ -38,7 +38,7 @@ namespace SiteKit.CLI.Services.Deploy
                     }
                 }
                 
-                _logger.LogInformation($"Successfully processed variants for {components.Count} components");
+                _logger.LogDebug($"Successfully processed variants for {components.Count} components");
             }
             catch (Exception ex)
             {
@@ -62,7 +62,7 @@ namespace SiteKit.CLI.Services.Deploy
                     await CreateVariantItemsAsync(args, component);
                 }
 
-                _logger.LogInformation($"Successfully processed variants for component: {component.Name}");
+                _logger.LogDebug($"Successfully processed variants for component: {component.Name}");
             }
             catch (Exception ex)
             {
@@ -85,7 +85,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (existingVariantsFolder == null)
                 {
-                    _logger.LogInformation($"Creating variants folder: {component.Name} at path: {variantsFolderPath}");
+                    _logger.LogDebug($"Creating variants folder: {component.Name} at path: {variantsFolderPath}");
 
                     // Get the parent Headless Variants folder
                     var parentVariantsPath = $"{site.SitePath}/Presentation/Headless Variants";
@@ -121,13 +121,13 @@ namespace SiteKit.CLI.Services.Deploy
                 else
                 {
                     variantsFolderId = existingVariantsFolder.ItemId;
-                    _logger.LogInformation($"Using existing variants folder: {component.Name} (ID: {variantsFolderId})");
+                    _logger.LogDebug($"Using existing variants folder: {component.Name} (ID: {variantsFolderId})");
                 }
 
                 // Set default fields for the variants folder
                 await SetDefaultFieldsAsync(args, variantsFolderId);
 
-                _logger.LogInformation($"Successfully processed variants folder: {component.Name}");
+                _logger.LogDebug($"Successfully processed variants folder: {component.Name}");
             }
             catch (Exception ex)
             {
@@ -166,7 +166,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                     if (existingVariant == null)
                     {
-                        _logger.LogInformation($"Creating variant item: {variant} at path: {variantPath}");
+                        _logger.LogDebug($"Creating variant item: {variant} at path: {variantPath}");
 
                         // Create the variant item using the Variant template
                         var createdVariantId = await _graphQLService.CreateItemAsync(
@@ -188,7 +188,7 @@ namespace SiteKit.CLI.Services.Deploy
                     else
                     {
                         variantId = existingVariant.ItemId;
-                        _logger.LogInformation($"Using existing variant item: {variant} (ID: {variantId})");
+                        _logger.LogDebug($"Using existing variant item: {variant} (ID: {variantId})");
                     }
 
                     // Update variant item fields
@@ -200,7 +200,7 @@ namespace SiteKit.CLI.Services.Deploy
                     // Set default fields for the variant item
                     await SetDefaultFieldsAsync(args, variantId);
 
-                    _logger.LogInformation($"Successfully processed variant item: {variant}");
+                    _logger.LogDebug($"Successfully processed variant item: {variant}");
                 }
             }
             catch (Exception ex)

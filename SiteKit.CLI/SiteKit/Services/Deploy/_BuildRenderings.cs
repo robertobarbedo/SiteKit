@@ -48,7 +48,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (existingRendering == null)
                 {
-                    _logger.LogInformation($"Creating rendering: {component.Name} at path: {renderingPath}");
+                    _logger.LogDebug($"Creating rendering: {component.Name} at path: {renderingPath}");
                     
                     // Get the parent folder (rendering category path)
                     var categoryFolderPath = $"{site.RenderingPath}/{component.Category}";
@@ -81,12 +81,12 @@ namespace SiteKit.CLI.Services.Deploy
 
                     renderingId = createdRenderingId;
 
-                    _logger.LogInformation($"Successfully created rendering: {component.Name} (ID: {renderingId})");
+                    _logger.LogDebug($"Successfully created rendering: {component.Name} (ID: {renderingId})");
                 }
                 else
                 {
                     renderingId = existingRendering.ItemId;
-                    _logger.LogInformation($"Using existing rendering: {component.Name} (ID: {renderingId})");
+                    _logger.LogDebug($"Using existing rendering: {component.Name} (ID: {renderingId})");
                 }
 
                 // Update rendering fields
@@ -138,7 +138,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Set default fields
                 await SetDefaultFieldsAsync(args, renderingId);
 
-                _logger.LogInformation($"Successfully processed rendering: {component.Name}");
+                _logger.LogDebug($"Successfully processed rendering: {component.Name}");
             }
             catch (Exception ex)
             {
@@ -174,7 +174,7 @@ namespace SiteKit.CLI.Services.Deploy
                 if (defaultFields.Any())
                 {
                     await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, itemId, defaultFields, verbose: true);
-                    _logger.LogInformation($"Set default fields for rendering item ID: {itemId}");
+                    _logger.LogDebug($"Set default fields for rendering item ID: {itemId}");
                 }
             }
             catch (Exception ex)

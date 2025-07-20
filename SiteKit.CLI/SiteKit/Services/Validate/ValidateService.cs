@@ -56,7 +56,7 @@ public class ValidateService : BaseService, IValidateService
         {
             if (verbose)
             {
-                _logger.LogWarning($"YAML directory not found: {yamlDirectory}");
+                _logger.LogDebug($"YAML directory not found: {yamlDirectory}");
             }
             return;
         }
@@ -67,7 +67,7 @@ public class ValidateService : BaseService, IValidateService
         {
             if (verbose)
             {
-                _logger.LogWarning($"No YAML files found in: {yamlDirectory}");
+                _logger.LogDebug($"No YAML files found in: {yamlDirectory}");
             }
             return;
         }

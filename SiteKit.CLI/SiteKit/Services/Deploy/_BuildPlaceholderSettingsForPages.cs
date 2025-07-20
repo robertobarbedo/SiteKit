@@ -45,7 +45,7 @@ namespace SiteKit.CLI.Services.Deploy
                 var pageType = args.PageTypesConfig.PageTypes.Where(c => c.Name == pageTypeName).FirstOrDefault();
                 if (pageType == null)
                 {
-                    _logger.LogWarning($"Page type not found: {pageTypeName}");
+                    _logger.LogDebug($"Page type not found: {pageTypeName}");
                     return;
                 }
 
@@ -61,7 +61,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Update rendering with placeholder settings
                 await UpdateRenderingPlaceholdersAsync(args, pageType, name);
 
-                _logger.LogInformation($"Successfully processed placeholder settings for page type: {pageTypeName}, placeholder: {phName}");
+                _logger.LogDebug($"Successfully processed placeholder settings for page type: {pageTypeName}, placeholder: {phName}");
             }
             catch (Exception ex)
             {
@@ -86,7 +86,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (existingPlaceholder == null)
                 {
-                    _logger.LogInformation($"Creating global placeholder setting: {name} at path: {globalPlaceholderPath}");
+                    _logger.LogDebug($"Creating global placeholder setting: {name} at path: {globalPlaceholderPath}");
 
                     // Get the parent placeholder folder
                     var placeholderFolder = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, site.PlaceholderPath, verbose: true);
@@ -121,7 +121,7 @@ namespace SiteKit.CLI.Services.Deploy
                 else
                 {
                     placeholderSettingId = existingPlaceholder.ItemId;
-                    _logger.LogInformation($"Using existing global placeholder setting: {name} (ID: {placeholderSettingId})");
+                    _logger.LogDebug($"Using existing global placeholder setting: {name} (ID: {placeholderSettingId})");
                 }
 
                 // Update placeholder setting fields
@@ -134,7 +134,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Set default fields
                 await SetDefaultFieldsAsync(args, placeholderSettingId);
 
-                _logger.LogInformation($"Successfully processed global placeholder setting: {name}");
+                _logger.LogDebug($"Successfully processed global placeholder setting: {name}");
             }
             catch (Exception ex)
             {
@@ -157,7 +157,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (existingPlaceholder == null)
                 {
-                    _logger.LogInformation($"Creating site placeholder setting: {name} at path: {sitePlaceholderPath}");
+                    _logger.LogDebug($"Creating site placeholder setting: {name} at path: {sitePlaceholderPath}");
 
                     // Get the parent placeholder settings folder
                     var placeholderSettingsPath = $"{site.SitePath}/Presentation/Placeholder Settings";
@@ -193,7 +193,7 @@ namespace SiteKit.CLI.Services.Deploy
                 else
                 {
                     placeholderSettingId = existingPlaceholder.ItemId;
-                    _logger.LogInformation($"Using existing site placeholder setting: {name} (ID: {placeholderSettingId})");
+                    _logger.LogDebug($"Using existing site placeholder setting: {name} (ID: {placeholderSettingId})");
                 }
 
                 // Update placeholder setting fields (note: site version uses "*" instead of "-{*}")
@@ -206,7 +206,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Set default fields
                 await SetDefaultFieldsAsync(args, placeholderSettingId);
 
-                _logger.LogInformation($"Successfully processed site placeholder setting: {name}");
+                _logger.LogDebug($"Successfully processed site placeholder setting: {name}");
             }
             catch (Exception ex)
             {
@@ -227,7 +227,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (rendering == null)
                 {
-                    _logger.LogWarning($"Page rendering not found at path: {renderingPath}");
+                    _logger.LogDebug($"Page rendering not found at path: {renderingPath}");
                     return;
                 }
 
@@ -237,7 +237,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (globalPlaceholder == null)
                 {
-                    _logger.LogWarning($"Global placeholder setting not found at path: {globalPlaceholderPath}");
+                    _logger.LogDebug($"Global placeholder setting not found at path: {globalPlaceholderPath}");
                     return;
                 }
 
@@ -256,11 +256,11 @@ namespace SiteKit.CLI.Services.Deploy
 
                     await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, rendering.ItemId, renderingFields, verbose: true);
                     
-                    _logger.LogInformation($"Updated rendering placeholders for page type: {pageType.Name}");
+                    _logger.LogDebug($"Updated rendering placeholders for page type: {pageType.Name}");
                 }
                 else
                 {
-                    _logger.LogInformation($"Page rendering already contains placeholder setting: {placeholderName}");
+                    _logger.LogDebug($"Page rendering already contains placeholder setting: {placeholderName}");
                 }
             }
             catch (Exception ex)
@@ -279,7 +279,7 @@ namespace SiteKit.CLI.Services.Deploy
                 var component = args.ComponentConfig.Components.Where(c => c.Name == componentName).FirstOrDefault();
                 if (component == null)
                 {
-                    _logger.LogWarning($"Component not found when getting controls: {componentName}");
+                    _logger.LogDebug($"Component not found when getting controls: {componentName}");
                     continue;
                 }
 
@@ -297,7 +297,7 @@ namespace SiteKit.CLI.Services.Deploy
                     }
                     else
                     {
-                        _logger.LogWarning($"Rendering not found for component: {componentName} at path: {renderingPath}");
+                        _logger.LogDebug($"Rendering not found for component: {componentName} at path: {renderingPath}");
                     }
                 }
                 catch (Exception ex)

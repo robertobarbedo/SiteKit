@@ -61,7 +61,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (standardValues == null)
                 {
-                    _logger.LogWarning($"Standard values not found at path: {standardValuesPath}. It should have been created by the template creation process.");
+                    _logger.LogDebug($"Standard values not found at path: {standardValuesPath}. It should have been created by the template creation process.");
                     // Don't fail here, just log a warning since the main template creation process should handle this
                     return;
                 }

@@ -38,7 +38,7 @@ namespace SiteKit.CLI.Services.Deploy
                     }
                 }
                 
-                _logger.LogInformation($"Successfully processed styles for {components.Count} components");
+                _logger.LogDebug($"Successfully processed styles for {components.Count} components");
             }
             catch (Exception ex)
             {
@@ -62,7 +62,7 @@ namespace SiteKit.CLI.Services.Deploy
                     await CreateStyleOptionsAsync(args, component, param);
                 }
 
-                _logger.LogInformation($"Successfully processed styles for component: {component.Name}");
+                _logger.LogDebug($"Successfully processed styles for component: {component.Name}");
             }
             catch (Exception ex)
             {
@@ -85,7 +85,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (existingStylesFolder == null)
                 {
-                    _logger.LogInformation($"Creating styles folder: {param.Name} at path: {stylesFolderPath}");
+                    _logger.LogDebug($"Creating styles folder: {param.Name} at path: {stylesFolderPath}");
 
                     // Get the parent Styles folder
                     var parentStylesPath = $"{site.SitePath}/Presentation/Styles";
@@ -121,7 +121,7 @@ namespace SiteKit.CLI.Services.Deploy
                 else
                 {
                     stylesFolderId = existingStylesFolder.ItemId;
-                    _logger.LogInformation($"Using existing styles folder: {param.Name} (ID: {stylesFolderId})");
+                    _logger.LogDebug($"Using existing styles folder: {param.Name} (ID: {stylesFolderId})");
                 }
 
                 // Update styles folder fields
@@ -133,7 +133,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Set default fields
                 await SetDefaultFieldsAsync(args, stylesFolderId);
 
-                _logger.LogInformation($"Successfully processed styles folder: {param.Name}");
+                _logger.LogDebug($"Successfully processed styles folder: {param.Name}");
             }
             catch (Exception ex)
             {
@@ -162,7 +162,7 @@ namespace SiteKit.CLI.Services.Deploy
                 var componentRenderingId = await GetComponentRenderingIdAsync(args, component);
                 if (componentRenderingId == null)
                 {
-                    _logger.LogWarning($"Component rendering not found for component: {component.Name}");
+                    _logger.LogDebug($"Component rendering not found for component: {component.Name}");
                     return;
                 }
 
@@ -180,7 +180,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                     if (existingOption == null)
                     {
-                        _logger.LogInformation($"Creating style option: {option.Name} at path: {optionPath}");
+                        _logger.LogDebug($"Creating style option: {option.Name} at path: {optionPath}");
 
                         // Create the style option using the Style Option template
                         var createdOptionId = await _graphQLService.CreateItemAsync(
@@ -202,7 +202,7 @@ namespace SiteKit.CLI.Services.Deploy
                     else
                     {
                         optionId = existingOption.ItemId;
-                        _logger.LogInformation($"Using existing style option: {option.Name} (ID: {optionId})");
+                        _logger.LogDebug($"Using existing style option: {option.Name} (ID: {optionId})");
                     }
 
                     // Update style option fields
@@ -227,7 +227,7 @@ namespace SiteKit.CLI.Services.Deploy
                     // Set default fields
                     await SetDefaultFieldsAsync(args, optionId);
 
-                    _logger.LogInformation($"Successfully processed style option: {option.Name}");
+                    _logger.LogDebug($"Successfully processed style option: {option.Name}");
                 }
             }
             catch (Exception ex)

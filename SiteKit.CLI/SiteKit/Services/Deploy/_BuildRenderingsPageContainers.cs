@@ -49,7 +49,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (existingRendering == null)
                 {
-                    _logger.LogInformation($"Creating page container rendering: {name} at path: {renderingPath}");
+                    _logger.LogDebug($"Creating page container rendering: {name} at path: {renderingPath}");
                     
                     // Get the parent rendering folder
                     var renderingFolder = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, site.RenderingPath, verbose: true);
@@ -80,12 +80,12 @@ namespace SiteKit.CLI.Services.Deploy
                     }
 
                     renderingId = createdRenderingId;
-                    _logger.LogInformation($"Successfully created page container rendering: {name} (ID: {renderingId})");
+                    _logger.LogDebug($"Successfully created page container rendering: {name} (ID: {renderingId})");
                 }
                 else
                 {
                     renderingId = existingRendering.ItemId;
-                    _logger.LogInformation($"Using existing page container rendering: {name} (ID: {renderingId})");
+                    _logger.LogDebug($"Using existing page container rendering: {name} (ID: {renderingId})");
                 }
 
                 // Update rendering fields
@@ -109,7 +109,7 @@ namespace SiteKit.CLI.Services.Deploy
                 // Set default fields
                 await SetDefaultFieldsAsync(args, renderingId);
 
-                _logger.LogInformation($"Successfully processed page container rendering: {name}");
+                _logger.LogDebug($"Successfully processed page container rendering: {name}");
             }
             catch (Exception ex)
             {
@@ -145,7 +145,7 @@ namespace SiteKit.CLI.Services.Deploy
                 if (defaultFields.Any())
                 {
                     await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, itemId, defaultFields, verbose: true);
-                    _logger.LogInformation($"Set default fields for page container rendering item ID: {itemId}");
+                    _logger.LogDebug($"Set default fields for page container rendering item ID: {itemId}");
                 }
             }
             catch (Exception ex)

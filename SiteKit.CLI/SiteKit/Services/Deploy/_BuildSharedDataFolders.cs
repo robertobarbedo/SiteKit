@@ -48,7 +48,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 if (existingSharedFolder == null)
                 {
-                    _logger.LogInformation($"Creating shared data folder: {sharedFolderName} at path: {sharedFolderPath}");
+                    _logger.LogDebug($"Creating shared data folder: {sharedFolderName} at path: {sharedFolderPath}");
                     
                     // Get the folder template
                     var folderTemplatePath = $"{site.DatasourceTemplatePath}/{component.Category}/{component.Name} Folder";
@@ -94,17 +94,17 @@ namespace SiteKit.CLI.Services.Deploy
                     // Set default fields if needed
                     await SetDefaultFieldsAsync(args, sharedFolderId);
 
-                    _logger.LogInformation($"Successfully created shared data folder: {sharedFolderName}");
+                    _logger.LogDebug($"Successfully created shared data folder: {sharedFolderName}");
                 }
                 else
                 {
-                    _logger.LogInformation($"Using existing shared data folder: {sharedFolderName} (ID: {existingSharedFolder.ItemId})");
+                    _logger.LogDebug($"Using existing shared data folder: {sharedFolderName} (ID: {existingSharedFolder.ItemId})");
                     
                     // Set default fields if needed
                     await SetDefaultFieldsAsync(args, existingSharedFolder.ItemId);
                 }
 
-                _logger.LogInformation($"Successfully processed shared data folder: {sharedFolderName}");
+                _logger.LogDebug($"Successfully processed shared data folder: {sharedFolderName}");
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace SiteKit.CLI.Services.Deploy
                 if (defaultFields.Any())
                 {
                     await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, itemId, defaultFields, verbose: true);
-                    _logger.LogInformation($"Set default fields for shared folder item ID: {itemId}");
+                    _logger.LogDebug($"Set default fields for shared folder item ID: {itemId}");
                 }
             }
             catch (Exception ex)

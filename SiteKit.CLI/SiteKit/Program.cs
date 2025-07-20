@@ -66,12 +66,15 @@ public class Program
         services.AddLogging(builder =>
         {
             builder.AddConsole();
+            
+            // When verbose is true, log everything (Debug and above)
+            // When verbose is false, log warnings and errors (Warning and above)
             builder.SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Warning);
 
             // Suppress HTTP client logs unless verbose
             if (!verbose)
             {
-                builder.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+                builder.AddFilter("System.Net.Http.HttpClient", LogLevel.Error);
             }
         });
 
@@ -83,11 +86,6 @@ public class Program
         services.AddScoped<IDeployService, DeployService>();
         services.AddScoped<IValidateService, ValidateService>();
         services.AddScoped<ISiteKitService, SiteKitService>();
-
-        // Register pipeline components
-        services.AddScoped<_BuildComponentCategoryFolders>();
-        services.AddScoped<_BuildComponentDatasources>();
-        services.AddScoped<_BuildComponentDatasourcesStdValues>();
     }
 
     private static Command CreateSiteKitCommand(ServiceProvider serviceProvider, ILogger<Program> logger,
