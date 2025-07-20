@@ -38,7 +38,6 @@ sitekit init --tenant "MyTenant" --site "MySite"
 
 Replace `"MyTenant"` and `"MySite"` with your actual tenant and site names.
 
-If you choose to deploy to docker/deploy you can refresh 'https://xmcloudcm.localhost/sitecore/'
 
 To deploy and generate all components and page types in Sitecore.
 ```powershell
@@ -48,4 +47,25 @@ sitekit deploy -s "MySite"
 To validate your YAML files
 ```powershell
 sitekit validate -s "MySite" 
+```
+
+## XM Cloud
+
+To deploy to XM Cloud you need:
+
+Login on your XM Cloud organization.
+```powershell
+dotnet sitecore cloud login
+```
+
+Connect to the environment. You need this step only once, the environment will be registred in user.json.
+```powershell
+dotnet sitecore cloud environment connect --environment-id <environment-id>
+```
+
+After connection, edit file .\.sitecore\user.json
+In the connected environment, change allowWrite to true. 
+
+```powershell
+sitekit deploy -n <environment-name> -s "MySite" 
 ```
