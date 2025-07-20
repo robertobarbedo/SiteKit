@@ -41,17 +41,29 @@ public class DeployService : BaseService, IDeployService
         //deploy
         if (args.IsValid)
         {
+            WaitAndWrite("Building component category folders...");
             new _BuildComponentCategoryFolders(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building component datasources and standard values...");
             new _BuildComponentDatasources(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building component datasources standard values...");
             new _BuildComponentDatasourcesStdValues(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building page templates..."); 
             new _BuildPageTemplates(graphQLService, _logger).Run(args);
-            new _BuildPageTemplatesStdValuesLayout(graphQLService, _logger, _httpClient).Run(args);
+            WaitAndWrite("Building shared data folders...");  
             new _BuildSharedDataFolders(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building renderings..."); 
             new _BuildRenderings(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building renderings page containers..."); 
             new _BuildRenderingsPageContainers(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building page templates standard values and layout...");
+            new _BuildPageTemplatesStdValuesLayout(graphQLService, _logger, _httpClient).Run(args);
+            WaitAndWrite("Placeholder settings for components...");
             new _BuildPlaceholderSettingsForComponents(graphQLService, _logger).Run(args);
+            WaitAndWrite("Placeholder settings for pages...");
             new _BuildPlaceholderSettingsForPages(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building styles...");
             new _BuildStyles(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building variants...");
             new _BuildVariants(graphQLService, _logger).Run(args);
         }
 
@@ -64,5 +76,11 @@ public class DeployService : BaseService, IDeployService
             Console.WriteLine("Error:");
             Console.WriteLine(args.ValidationMessage);
         }
+    }
+
+    public void WaitAndWrite(string message)
+    {
+        Console.WriteLine(message);
+        Thread.Sleep(250);
     }
 }
