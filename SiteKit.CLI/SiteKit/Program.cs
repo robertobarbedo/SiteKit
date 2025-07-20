@@ -56,7 +56,7 @@ public class Program
         rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, verboseOption));
 
         //debug
-        //args = (new List<String>() { "deploy", "-s", "NewSite" }).ToArray();
+        //args = (new List<String>() { "validate", "-s", "NewSite" }).ToArray();
 
         return await rootCommand.InvokeAsync(args);
     }
@@ -181,13 +181,6 @@ public class Program
 
     private static Command CreateInitCommand(ServiceProvider serviceProvider, ILogger<Program> logger, Option<bool> verboseOption)
     {
-        var tenantOption = new Option<string>(
-            aliases: new[] { "-t", "--tenant" },
-            description: "Tenant name (required)")
-        {
-            IsRequired = true
-        };
-
         var siteOption = new Option<string>(
             aliases: new[] { "-s", "--site" },
             description: "Site name (required)")
@@ -197,12 +190,11 @@ public class Program
 
         var command = new Command("init", "Initialize SiteKit project with sample YAML files")
         {
-            tenantOption,
             siteOption,
             verboseOption
         };
 
-        command.SetHandler(async (tenant, site, verbose) =>
+        command.SetHandler(async (site, verbose) =>
         {
             // Create service provider with correct verbose setting
             var services = new ServiceCollection();
@@ -215,12 +207,12 @@ public class Program
             if (verbose)
             {
                 verboseLogger.LogInformation("Verbose mode enabled");
-                verboseLogger.LogInformation($"Initializing SiteKit project for tenant: {tenant}, site: {site}");
+                verboseLogger.LogInformation($"Initializing SiteKit project for site: {site}");
             }
 
             try
             {
-                await siteKitService.InitializeAsync(tenant, site, verbose);
+                await siteKitService.InitializeAsync(site, verbose);
                 if (!verbose)
                 {
                     // Only show essential completion message in non-verbose mode
@@ -236,7 +228,7 @@ public class Program
                 verboseLogger.LogError(ex, "Initialization failed");
                 Environment.Exit(1);
             }
-        }, tenantOption, siteOption, verboseOption);
+        }, siteOption, verboseOption);
 
         return command;
     }

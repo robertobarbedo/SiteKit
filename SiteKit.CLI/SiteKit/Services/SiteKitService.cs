@@ -8,7 +8,7 @@ public interface ISiteKitService
 {
     Task DeployAsync(string siteName, string environment, bool verbose);
     Task ValidateAsync(string siteName, string environment, bool verbose);
-    Task InitializeAsync(string tenant, string site, bool verbose);
+    Task InitializeAsync(string site, bool verbose);
 }
 
 public class SiteKitService : ISiteKitService
@@ -37,8 +37,8 @@ public class SiteKitService : ISiteKitService
         await _validateService.ValidateAsync(siteName, environment, verbose);
     }
 
-    public async Task InitializeAsync(string tenant, string site, bool verbose)
+    public async Task InitializeAsync(string site, bool verbose)
     {
-        await _initService.InitializeAsync(tenant, site, verbose);
+        await _initService.InitializeAsync(site, verbose);
     }
 }
