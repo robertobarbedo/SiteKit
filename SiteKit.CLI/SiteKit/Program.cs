@@ -12,8 +12,8 @@ public class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        Console.WriteLine("Waiting for debugger... press Enter to continue");
-        Console.ReadLine();
+        //Console.WriteLine("Waiting for debugger... press Enter to continue");
+        //Console.ReadLine();
 
         var services = new ServiceCollection();
         ConfigureServices(services, false); // Default to non-verbose
@@ -31,11 +31,11 @@ public class Program
 
         var environmentOption = new Option<string>(
             aliases: new[] { "-n", "--environment" },
-            description: "Environment name (default: xmCloud)")
+            description: "Environment name (default: default)")
         {
             IsRequired = false
         };
-        environmentOption.SetDefaultValue("xmCloud");
+        environmentOption.SetDefaultValue("default");
 
         var verboseOption = new Option<bool>(
             aliases: new[] { "-v", "--verbose" },
@@ -55,6 +55,9 @@ public class Program
         // Add init command
         rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, verboseOption));
 
+        //debug
+        args = (new List<String>() { "deploy", "-s", "NewSite" }).ToArray();
+
         return await rootCommand.InvokeAsync(args);
     }
 
@@ -64,7 +67,7 @@ public class Program
         {
             builder.AddConsole();
             builder.SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Warning);
-            
+
             // Suppress HTTP client logs unless verbose
             if (!verbose)
             {
@@ -73,19 +76,21 @@ public class Program
         });
 
         services.AddHttpClient();
-        
+
         // Register service interfaces
         services.AddScoped<IGraphQLService, GraphQLService>();
         services.AddScoped<IInitService, InitService>();
         services.AddScoped<IDeployService, DeployService>();
         services.AddScoped<IValidateService, ValidateService>();
         services.AddScoped<ISiteKitService, SiteKitService>();
-        
+
         // Register pipeline components
         services.AddScoped<_BuildComponentCategoryFolders>();
+        services.AddScoped<_BuildComponentDatasources>();
+        services.AddScoped<_BuildComponentDatasourcesStdValues>();
     }
 
-    private static Command CreateSiteKitCommand(ServiceProvider serviceProvider, ILogger<Program> logger, 
+    private static Command CreateSiteKitCommand(ServiceProvider serviceProvider, ILogger<Program> logger,
         Option<string> siteOption, Option<string> environmentOption, Option<bool> verboseOption)
     {
         var command = new Command("deploy", "Deploy YAML files to Sitecore")
@@ -102,7 +107,7 @@ public class Program
             ConfigureServices(services, verbose);
             var verboseServiceProvider = services.BuildServiceProvider();
             var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
-            
+
             var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
 
             if (verbose)
@@ -129,7 +134,7 @@ public class Program
         return command;
     }
 
-    private static Command CreateValidateCommand(ServiceProvider serviceProvider, ILogger<Program> logger, 
+    private static Command CreateValidateCommand(ServiceProvider serviceProvider, ILogger<Program> logger,
         Option<string> siteOption, Option<string> environmentOption, Option<bool> verboseOption)
     {
         var command = new Command("validate", "Validate YAML files against Sitecore")
@@ -146,7 +151,7 @@ public class Program
             ConfigureServices(services, verbose);
             var verboseServiceProvider = services.BuildServiceProvider();
             var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
-            
+
             var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
 
             if (verbose)
@@ -203,7 +208,7 @@ public class Program
             ConfigureServices(services, verbose);
             var verboseServiceProvider = services.BuildServiceProvider();
             var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
-            
+
             var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
 
             if (verbose)

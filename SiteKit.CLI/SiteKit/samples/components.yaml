@@ -5,9 +5,7 @@ components:
 
   - name: Button
     category: Navigation
-    rendering:
-      - name: __Icon
-        value: Office/32x32/link.png
+    icon: Office/32x32/link.png
     variants:
       - Primary
       - Secondary

@@ -1,6 +1,7 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using SiteKit.CLI.Services;
+using SiteKit.CLI.Services.Deploy;
+using System.Text.Json;
 
 namespace SiteKit.CLI.Services.Deploy;
 
@@ -37,6 +38,17 @@ public class DeployService : BaseService, IDeployService
         new _LoadYaml().Run(args);
         new _CompositionResolver().Run(args);
         new _BuildComponentCategoryFolders(graphQLService, _logger).Run(args);
+        new _BuildComponentDatasources(graphQLService, _logger).Run(args);
+        new _BuildComponentDatasourcesStdValues(graphQLService, _logger).Run(args);
+        new _BuildPageTemplates(graphQLService, _logger).Run(args);
+        new _BuildSharedDataFolders(graphQLService, _logger).Run(args);
+        new _BuildRenderings(graphQLService, _logger).Run(args);
+        new _BuildRenderingsPageContainers(graphQLService, _logger).Run(args);
+        new _BuildPlaceholderSettingsForComponents(graphQLService, _logger).Run(args);
+        new _BuildPlaceholderSettingsForPages(graphQLService, _logger).Run(args);
+        new _BuildStyles(graphQLService, _logger).Run(args);
+        new _BuildVariants(graphQLService, _logger).Run(args);
+
 
     }
 }
