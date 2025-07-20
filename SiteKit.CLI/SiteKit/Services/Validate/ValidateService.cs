@@ -33,13 +33,10 @@ public class ValidateService : BaseService, IValidateService
 
         var graphQLService = new GraphQLService(_httpClient, _logger);
 
+        //new _ValidateSchema(new HttpClient(), _logger).Run(args);
         new _ReadYaml().Run(args);
-
-        if (args.IsValid)
-            new _LoadYaml().Run(args);
-
-        if (args.IsValid)
-            new _CompositionResolver().Run(args);
+        new _LoadYaml().Run(args);
+        new _CompositionResolver().Run(args);
 
         if (args.IsValid)
         {
@@ -50,6 +47,11 @@ public class ValidateService : BaseService, IValidateService
             Console.WriteLine("Error:");
             Console.WriteLine(args.ValidationMessage);
         }
+    }
+
+    public void Validate(AutoArgs args)
+    {
+
     }
 
 }

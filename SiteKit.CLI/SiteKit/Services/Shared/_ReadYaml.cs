@@ -56,7 +56,6 @@ namespace SiteKit.CLI.Services.Shared
                     }
                 }
 
-                args.IsValid = true;
                 args.ValidationMessage = $"Successfully read {args.Yamls.Count} YAML files from {siteKitDirectory}";
             }
             catch (Exception ex)
