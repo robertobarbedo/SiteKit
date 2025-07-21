@@ -10,11 +10,11 @@
           "items": {
             "type": "object",
             "properties": {
-              "Key": {
+              "key": {
                 "type": "string",
                 "description": "Dictionary key - can be any text"
               },
-              "Phrase": {
+              "phrase": {
                 "type": "string",
                 "description": "Dictionary phrase/translation - can be any text"
               }
