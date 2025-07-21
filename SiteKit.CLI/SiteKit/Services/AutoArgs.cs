@@ -9,21 +9,21 @@ namespace SiteKit
         public string SiteName { get; private set; }
         public string Salt { get; set; }
         public Dictionary<string, string> Yamls { get; private set; }
-        public SiteConfig SiteConfig { get; set; }
-        public ComponentConfig ComponentConfig { get; set; }
-        public PageTypesConfig PageTypesConfig { get; set; }
-        public CompositionConfig CompositionConfig { get; set; }
+        public SiteConfig? SiteConfig { get; set; }
+        public ComponentConfig? ComponentConfig { get; set; }
+        public PageTypesConfig? PageTypesConfig { get; set; }
+        public CompositionConfig? CompositionConfig { get; set; }
+        public DictionaryConfig? DictionaryConfig { get; set; }
         public bool IsValid { get; set; }
         public string ValidationMessage { get; set; }
-        public  string Directory { get;set; }
-        public string AccessToken { get; set; }
-        public string Endpoint { get; set; }
+        public string? Directory { get;set; }
+        public string? AccessToken { get; set; }
+        public string? Endpoint { get; set; }
 
         public AutoArgs(string siteName)
         {
             SiteName = siteName;
             Salt = "RB2502kksidoe99";
-            SiteConfig = new SiteConfig();
             Yamls = new Dictionary<string, string>();
             IsValid = true;
             ValidationMessage = string.Empty;

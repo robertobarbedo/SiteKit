@@ -12,6 +12,7 @@ namespace SiteKit.CLI.Services.Shared
             args.ComponentConfig = Parse<ComponentConfig>(args.Yamls["components"]);
             args.PageTypesConfig = Parse<PageTypesConfig>(args.Yamls["pagetypes"]);
             args.CompositionConfig = Parse<CompositionConfig>(args.Yamls["composition"]);
+            args.DictionaryConfig = Parse<DictionaryConfig>(args.Yamls["dictionary"]);
         }
         public T Parse<T>(string yaml)
         {

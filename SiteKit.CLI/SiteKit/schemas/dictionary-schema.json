@@ -19,7 +19,7 @@
                 "description": "Dictionary phrase/translation - can be any text"
               }
             },
-            "required": ["Key", "Phrase"],
+            "required": ["key", "phrase"],
             "additionalProperties": false,
             "description": "Dictionary entry with required Key and Phrase"
           },

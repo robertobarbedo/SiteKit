@@ -65,14 +65,16 @@ public class DeployService : BaseService, IDeployService
             new _BuildRenderingsPageContainers(graphQLService, _logger).Run(args);
             WaitAndWrite("Building page templates standard values and layout...");
             new _BuildPageTemplatesStdValuesLayout(graphQLService, _logger, _httpClient).Run(args);
-            WaitAndWrite("Placeholder settings for components...");
+            WaitAndWrite("Building placeholder settings for components...");
             new _BuildPlaceholderSettingsForComponents(graphQLService, _logger).Run(args);
-            WaitAndWrite("Placeholder settings for pages...");
+            WaitAndWrite("Building placeholder settings for pages...");
             new _BuildPlaceholderSettingsForPages(graphQLService, _logger).Run(args);
             WaitAndWrite("Building styles...");
             new _BuildStyles(graphQLService, _logger).Run(args);
             WaitAndWrite("Building variants...");
             new _BuildVariants(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building dictionary...");
+            new _BuildDictionary(graphQLService, _logger).Run(args);
         }
 
         if (args.IsValid)

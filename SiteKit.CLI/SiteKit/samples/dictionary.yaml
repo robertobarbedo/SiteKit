@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/schemas/dictionary-schema.json
 dictionary:
   entries:
-    - Key: welcome
-      Phrase: "Welcome to MySite"
-    - Key: sign_in
-      Phrase: "Sign In:"
-    - Key: sign_out
-      Phrase: "Sign Out:"
+    - key: welcome
+      phrase: "Welcome to MySite"
+    - key: sign_in
+      phrase: "Sign In:"
+    - key: sign_out
+      phrase: "Sign Out:"
