@@ -33,10 +33,10 @@ dotnet tool install --global --add-source . SiteKit.CLI
 Once installed, navigate to the root folder of your Sitecore project and initialize SiteKit:
 
 ```powershell
-sitekit init --tenant "MyTenant" --site "MySite"
+sitekit init -s "MySite"
 ```
 
-Replace `"MyTenant"` and `"MySite"` with your actual tenant and site names.
+Where `"MySite"` is your Sitecore site name.
 
 
 To deploy and generate all components and page types in Sitecore.
