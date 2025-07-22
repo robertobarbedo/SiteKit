@@ -44,7 +44,9 @@ public class DeployService : BaseService, IDeployService
         // Post Parsing Validation
         new _ValidateSiteSettingsPaths(graphQLService, _logger).Run(args);
         new _ValidatePageDefaultLayouts(_logger).Run(args);
+        new _ValidatePartialsLayouts(_logger).Run(args);
         new _ValidateCompositionComponents(_logger).Run(args);
+        new _ValidateInsertOptions(graphQLService, _logger).Run(args);
 
         //deploy
         if (args.IsValid)
@@ -69,17 +71,26 @@ public class DeployService : BaseService, IDeployService
             new _BuildPlaceholderSettingsForComponents(graphQLService, _logger).Run(args);
             WaitAndWrite("Building placeholder settings for pages...");
             new _BuildPlaceholderSettingsForPages(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building the insert options of all pages...");
+            new _BuildInsertOptions(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building partial designs...");
+            new _BuildPartialDesigns(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building default page design...");
+            new _BuildPageDesigns(graphQLService, _logger).Run(args);
+            WaitAndWrite("Updating Page Designs to Default...");
+            new _UpdatePageDesignsDefault(graphQLService, _logger).Run(args);
             WaitAndWrite("Building styles...");
             new _BuildStyles(graphQLService, _logger).Run(args);
             WaitAndWrite("Building variants...");
             new _BuildVariants(graphQLService, _logger).Run(args);
             WaitAndWrite("Building dictionary...");
             new _BuildDictionary(graphQLService, _logger).Run(args);
+
         }
 
         if (args.IsValid)
         {
-            Console.WriteLine("Deployment successfully.");
+            Console.WriteLine("Deployment successfull.");
         }
         else
         {

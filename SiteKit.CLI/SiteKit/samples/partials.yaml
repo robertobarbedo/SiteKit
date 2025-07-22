@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/schemas/partials-schema.json
+partials:
+  - name: Header
+    layout:
+      - component: Container Wrapper
+        children: 
+          - component: One Column
+  - name: Footer
+    layout:
+      - component: Container Wrapper
+        children: 
+          - component: One Column
+    
+    

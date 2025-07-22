@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/your-org/sitecore-yaml-schemas/main/partials-schema.json",
+  "title": "Sitecore Partials Configuration",
+  "description": "JSON Schema for Sitecore partials.yaml configuration file defining reusable partial layout components",
+  "type": "object",
+  "required": ["partials"],
+  "properties": {
+    "partials": {
+      "type": "array",
+      "description": "List of partial layout definitions",
+      "items": {
+        "type": "object",
+        "required": ["name", "layout"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Partial name - descriptive name for the reusable layout section",
+            "minLength": 1,
+            "pattern": "^[A-Z][a-zA-Z0-9]*( [A-Z][a-zA-Z0-9]*)*$",
+            "examples": ["Header", "Footer", "Navigation", "Sidebar"]
+          },
+          "layout": {
+            "type": "array",
+            "description": "Layout structure definition for this partial",
+            "items": {
+              "$ref": "#/definitions/layoutComponent"
+            },
+            "minItems": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the partial's purpose",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "layoutComponent": {
+      "type": "object",
+      "required": ["component"],
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "Component name - must match a component defined in components.yaml",
+          "minLength": 1,
+          "pattern": "^[A-Z][a-zA-Z0-9]*( [A-Z][a-zA-Z0-9]*)*$",
+          "examples": ["Container Wrapper", "One Column", "Two Column", "Header", "Footer"]
+        },
+        "children": {
+          "type": "array",
+          "description": "Child components nested within this component",
+          "items": {
+            "$ref": "#/definitions/layoutComponent"
+          },
+          "minItems": 1
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Target placeholder name for this component",
+          "minLength": 1,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9-_]*$",
+          "examples": ["main", "content", "header", "footer", "sidebar"]
+        },
+        "datasource": {
+          "type": "object",
+          "description": "Datasource configuration for this component instance",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Sitecore item path for datasource",
+              "minLength": 1,
+              "pattern": "^/sitecore/.*$"
+            },
+            "template": {
+              "type": "string",
+              "description": "Template name or ID for datasource items",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": true
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Rendering parameters for this component instance",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Parameter value"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

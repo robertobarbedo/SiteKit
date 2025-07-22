@@ -44,7 +44,9 @@ public class ValidateService : BaseService, IValidateService
         // Post Parsing Validation
         new _ValidateSiteSettingsPaths(graphQLService, _logger).Run(args);
         new _ValidatePageDefaultLayouts(_logger).Run(args);
+        new _ValidatePartialsLayouts(_logger).Run(args);
         new _ValidateCompositionComponents(_logger).Run(args);
+        new _ValidateInsertOptions(graphQLService, _logger).Run(args);
 
         if (args.IsValid)
         {

@@ -90,6 +90,15 @@
             "items": {
               "$ref": "#/$defs/layoutItem"
             }
+          },
+          "insertoptions": {
+            "type": "array",
+            "description": "List of page types that can be inserted as children of this page type. Same as the insert options in Sitecore",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "examples": [["Content Page", "Landing Page"]]
           }
         },
         "additionalProperties": false

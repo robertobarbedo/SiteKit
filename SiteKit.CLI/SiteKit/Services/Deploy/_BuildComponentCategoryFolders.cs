@@ -32,19 +32,19 @@ namespace SiteKit.CLI.Services.Deploy
             foreach (var type in types)
             {
                 //datasource_template_path
-                await CreateOrUpdateAsync("{0437FEE2-44C9-46A6-ABE9-28858D9FEE8C}", type, site.DatasourceTemplatePath, args);
+                await CreateOrUpdateAsync("{0437FEE2-44C9-46A6-ABE9-28858D9FEE8C}", type, site.DatasourceTemplatePath, args); //tenant
 
                 //rendering_path
-                await CreateOrUpdateAsync("{7EE0975B-0698-493E-B3A2-0B2EF33D0522}", type, site.RenderingPath, args);
+                await CreateOrUpdateAsync("{7EE0975B-0698-493E-B3A2-0B2EF33D0522}", type, site.RenderingPath, args); //tenant
                 
                 //available_ren_path
-                await CreateOrUpdateAsync("{76DA0A8D-FC7E-42B2-AF1E-205B49E43F98}", type, site.AvailableRenderingsPath, args);
+                await CreateOrUpdateAsync("{76DA0A8D-FC7E-42B2-AF1E-205B49E43F98}", type, site.AvailableRenderingsPath, args); //site
                 
                 //placeholder_s_path
-                await CreateOrUpdateAsync("{C3B037A0-46E5-4B67-AC7A-A144B962A56F}", type, site.PlaceholderPath, args);
+                await CreateOrUpdateAsync("{C3B037A0-46E5-4B67-AC7A-A144B962A56F}", type, site.PlaceholderPath, args); //tenant
                 
                 //placeholder_s_path_in_site
-                await CreateOrUpdateAsync("{52288E39-7830-4694-B62D-32A54C6EF7BA}", type, site.SitePath + "/Presentation/Placeholder Settings", args);
+                await CreateOrUpdateAsync("{52288E39-7830-4694-B62D-32A54C6EF7BA}", type, site.SitePath + "/Presentation/Placeholder Settings", args);//site
             }
         }
 

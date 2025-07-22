@@ -37,7 +37,7 @@ query {{
         itemId
         name
         path
-        fields(ownFields: true, excludeStandardFields: true) {{
+        fields(ownFields: true, excludeStandardFields: false) {{
             nodes {{
                 name
                 value

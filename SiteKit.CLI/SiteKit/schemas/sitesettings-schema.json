@@ -45,6 +45,14 @@
           "type": "string",
           "description": "Site placeholder path "
         },
+        "partial_designs_path": {
+          "type": "string",
+          "description": "Partial designs path - location where partial design templates are stored"
+        },
+        "page_designs_path": {
+          "type": "string",
+          "description": "Page designs path - location where page design templates are stored"
+        },
         "defaults": {
           "type": "object",
           "properties": {

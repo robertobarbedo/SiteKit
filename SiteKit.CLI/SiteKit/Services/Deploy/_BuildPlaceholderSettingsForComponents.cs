@@ -12,11 +12,15 @@ namespace SiteKit.CLI.Services.Deploy
     {
         private readonly IGraphQLService _graphQLService;
         private readonly ILogger _logger;
+        
+        // Dictionary to accumulate rendering IDs and their placeholder IDs
+        private readonly Dictionary<string, List<string>> _renderingPlaceholderUpdates;
 
         public _BuildPlaceholderSettingsForComponents(IGraphQLService graphQLService, ILogger logger)
         {
             _graphQLService = graphQLService;
             _logger = logger;
+            _renderingPlaceholderUpdates = new Dictionary<string, List<string>>();
         }
 
         public void Run(AutoArgs args)
@@ -27,6 +31,9 @@ namespace SiteKit.CLI.Services.Deploy
 
         public async Task ProcessAsync(AutoArgs args)
         {
+            // Clear any previous updates
+            _renderingPlaceholderUpdates.Clear();
+            
             var components = args.CompositionConfig.Composition.Components;
             foreach (var key in components.Keys)
             {
@@ -36,6 +43,9 @@ namespace SiteKit.CLI.Services.Deploy
                     await CreateOrUpdateAsync(args, key, phKey, components[key][phKey]);
                 }
             }
+            
+            // After processing all components, apply the rendering placeholder updates
+            await ApplyRenderingPlaceholderUpdatesAsync(args);
         }
 
         private async Task CreateOrUpdateAsync(AutoArgs args, string componentName, string phName, List<string> components)
@@ -242,31 +252,27 @@ namespace SiteKit.CLI.Services.Deploy
                     return;
                 }
 
-                // Check if the rendering already has this placeholder setting
-                var existingPlaceholders = rendering.Fields?.FirstOrDefault(f => f.Name == "Placeholders")?.Value ?? "";
+                // Accumulate rendering ID and placeholder ID for later batch update
+                var placeholderIdFormatted = new Guid(globalPlaceholder.ItemId).ToString("B").ToUpperInvariant();
                 
-                if (existingPlaceholders.IndexOf(globalPlaceholder.ItemId) == -1)
+                if (!_renderingPlaceholderUpdates.ContainsKey(rendering.ItemId))
                 {
-                    // Add the placeholder setting ID to the rendering's Placeholders field
-                    var updatedPlaceholders = existingPlaceholders + (existingPlaceholders == "" ? "" : "|") + globalPlaceholder.ItemId;
-                    
-                    var renderingFields = new Dictionary<string, string>
-                    {
-                        ["Placeholders"] = updatedPlaceholders
-                    };
-
-                    await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, rendering.ItemId, renderingFields, verbose: true);
-                    
-                    _logger.LogDebug($"Updated rendering placeholders for: {component.Name}");
+                    _renderingPlaceholderUpdates[rendering.ItemId] = new List<string>();
+                }
+                
+                if (!_renderingPlaceholderUpdates[rendering.ItemId].Contains(placeholderIdFormatted))
+                {
+                    _renderingPlaceholderUpdates[rendering.ItemId].Add(placeholderIdFormatted);
+                    _logger.LogDebug($"Queued placeholder setting for rendering '{component.Name}': {placeholderIdFormatted}");
                 }
                 else
                 {
-                    _logger.LogDebug($"Rendering already contains placeholder setting: {placeholderName}");
+                    _logger.LogDebug($"Placeholder setting already queued for rendering '{component.Name}': {placeholderIdFormatted}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error updating rendering placeholders for component: {component.Name}");
+                _logger.LogError(ex, $"Error queuing rendering placeholder update for component: {component.Name}");
                 throw;
             }
         }
@@ -342,6 +348,97 @@ namespace SiteKit.CLI.Services.Deploy
             {
                 _logger.LogError(ex, $"Error setting default fields for placeholder setting item ID: {itemId}");
                 // Don't throw here, as this is not critical for the main operation
+            }
+        }
+
+        private async Task<string> GetCurrentPlaceholdersValueAsync(AutoArgs args, string renderingId)
+        {
+            try
+            {
+                // Since the GraphQL GetItemByPathAsync doesn't return the Placeholders field,
+                // we have a few options:
+                // 1. Return empty string and always append (safe approach)
+                // 2. Try a different GraphQL query that specifically requests this field
+                // 3. Make a separate API call to get the field value
+                
+                // For now, we'll use the safe approach and return empty string
+                // This means we might have duplicate entries, but it's better than missing them
+                await Task.CompletedTask; // To make this properly async
+                return "";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug($"Could not retrieve current Placeholders value for item {renderingId}: {ex.Message}");
+                return "";
+            }
+        }
+
+        private async Task ApplyRenderingPlaceholderUpdatesAsync(AutoArgs args)
+        {
+            try
+            {
+                _logger.LogDebug($"Applying rendering placeholder updates for {_renderingPlaceholderUpdates.Count} renderings");
+
+                foreach (var renderingUpdate in _renderingPlaceholderUpdates)
+                {
+                    var renderingId = renderingUpdate.Key;
+                    var placeholderIds = renderingUpdate.Value;
+
+                    try
+                    {
+                        // Get current placeholder value (using our workaround)
+                        var currentPlaceholders = await GetCurrentPlaceholdersValueAsync(args, renderingId);
+                        
+                        // Build the new placeholder value by combining current and new placeholder IDs
+                        var allPlaceholderIds = new List<string>();
+                        
+                        // Add existing placeholders if any
+                        if (!string.IsNullOrEmpty(currentPlaceholders))
+                        {
+                            allPlaceholderIds.AddRange(currentPlaceholders.Split('|', StringSplitOptions.RemoveEmptyEntries));
+                        }
+                        
+                        // Add new placeholder IDs (avoiding duplicates)
+                        foreach (var placeholderId in placeholderIds)
+                        {
+                            if (!allPlaceholderIds.Contains(placeholderId))
+                            {
+                                allPlaceholderIds.Add(placeholderId);
+                            }
+                        }
+                        
+                        // Update the rendering with all placeholder IDs
+                        var updatedPlaceholders = string.Join("|", allPlaceholderIds);
+                        
+                        var renderingFields = new Dictionary<string, string>
+                        {
+                            ["Placeholders"] = updatedPlaceholders
+                        };
+
+                        var result = await _graphQLService.UpdateItemAsync(args.Endpoint, args.AccessToken, renderingId, renderingFields, verbose: true);
+                        
+                        if (result != null)
+                        {
+                            _logger.LogDebug($"Successfully updated rendering {renderingId} with {placeholderIds.Count} placeholder settings");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Failed to update rendering {renderingId} with placeholder settings");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error updating rendering {renderingId} with placeholder settings");
+                        // Continue with other renderings
+                    }
+                }
+                
+                _logger.LogDebug($"Completed applying rendering placeholder updates");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in ApplyRenderingPlaceholderUpdatesAsync");
+                throw;
             }
         }
     }

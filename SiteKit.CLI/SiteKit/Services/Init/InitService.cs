@@ -75,7 +75,8 @@ public class InitService : BaseService, IInitService
             { "composition.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/composition.yaml" },
             { "dictionary.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/dictionary.yaml" },
             { "pagetypes.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/pagetypes.yaml" },
-            { "sitesettings.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/sitesettings.yaml" }
+            { "sitesettings.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/sitesettings.yaml" },
+            { "partials.yaml", "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/samples/partials.yaml" }
         };
 
         // Download files
@@ -114,17 +115,22 @@ public class InitService : BaseService, IInitService
         {
             var content = await File.ReadAllTextAsync(siteSettingsPath);
             
+            // Remove leading slash from tenant for path building to avoid double slashes
+            var tenantForPaths = tenant.TrimStart('/');
+            
             // Replace placeholders
             content = content
                 .Replace("$(name)", $"\"{site}\"")
-                .Replace("$(site_path)", $"/sitecore/content/{tenant}/{site}")
-                .Replace("$(dictionary_path)", $"/sitecore/content/{tenant}/{site}/Dictionary")
-                .Replace("$(site_template_path)", $"/sitecore/templates/Project/{tenant}")
-                .Replace("$(datasource_template_path)", $"/sitecore/templates/Feature/{tenant}")
-                .Replace("$(rendering_path)", $"/sitecore/layout/Renderings/Feature/{tenant}")
-                .Replace("$(placeholder_path)", $"/sitecore/layout/Placeholder Settings/Feature/{tenant}")
-                .Replace("$(available_renderings_path)", $"/sitecore/content/{tenant}/{site}/Presentation/Available Renderings")
-                .Replace("$(site_placeholder_path)", $"/sitecore/content/{tenant}/{site}/Presentation/Placeholder Settings");
+                .Replace("$(site_path)", $"/sitecore/content/{tenantForPaths}/{site}")
+                .Replace("$(dictionary_path)", $"/sitecore/content/{tenantForPaths}/{site}/Dictionary")
+                .Replace("$(site_template_path)", $"/sitecore/templates/Project/{tenantForPaths}")
+                .Replace("$(datasource_template_path)", $"/sitecore/templates/Feature/{tenantForPaths}")
+                .Replace("$(rendering_path)", $"/sitecore/layout/Renderings/Feature/{tenantForPaths}")
+                .Replace("$(placeholder_path)", $"/sitecore/layout/Placeholder Settings/Feature/{tenantForPaths}")
+                .Replace("$(available_renderings_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Available Renderings")
+                .Replace("$(site_placeholder_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Placeholder Settings")
+                .Replace("$(partial_designs_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Partial Designs")
+                .Replace("$(page_designs_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Page Designs");
 
             await File.WriteAllTextAsync(siteSettingsPath, content);
             
@@ -147,12 +153,26 @@ public class InitService : BaseService, IInitService
             throw new ArgumentException("Root path cannot be null or empty", nameof(rootPath));
         }
 
+        // Normalize the path to ensure it starts with /sitecore/content/
+        if (!rootPath.StartsWith("/sitecore/content/", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Root path must start with '/sitecore/content/'. Got: {rootPath}");
+        }
+
         // Split the path and remove empty entries
         var pathSegments = rootPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         
-        if (pathSegments.Length < 2)
+        // Expected format: ["sitecore", "content", ...tenant segments..., siteName]
+        if (pathSegments.Length < 4)
         {
-            throw new InvalidOperationException($"Invalid root path format: {rootPath}. Expected format: /a/b/c/tenant/sitename");
+            throw new InvalidOperationException($"Invalid root path format: {rootPath}. Expected format: /sitecore/content/tenant/sitename");
+        }
+
+        // Verify the path starts with "sitecore" and "content"
+        if (!string.Equals(pathSegments[0], "sitecore", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(pathSegments[1], "content", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Invalid root path format: {rootPath}. Must start with /sitecore/content/");
         }
 
         // The last segment should be the site name
@@ -162,17 +182,20 @@ public class InitService : BaseService, IInitService
             throw new InvalidOperationException($"Root path does not end with site name. Expected: {siteName}, Found: {lastSegment}");
         }
 
-        // The second to last segment should be the tenant
-        if (pathSegments.Length < 2)
+        // Extract tenant segments (everything between "content" and siteName)
+        var tenantSegments = pathSegments.Skip(2).Take(pathSegments.Length - 3).ToArray();
+        
+        if (tenantSegments.Length == 0)
         {
-            throw new InvalidOperationException($"Cannot extract tenant from root path: {rootPath}. Path too short.");
+            throw new InvalidOperationException($"Cannot extract tenant from root path: {rootPath}. No tenant segments found between content and site name.");
         }
 
-        var tenant = pathSegments[pathSegments.Length - 2];
+        // Build tenant path with leading slash
+        var tenant = "/" + string.Join("/", tenantSegments);
         
-        if (string.IsNullOrWhiteSpace(tenant))
+        if (string.IsNullOrWhiteSpace(tenant) || tenant == "/")
         {
-            throw new InvalidOperationException($"Tenant name extracted from root path is empty: {rootPath}");
+            throw new InvalidOperationException($"Tenant path extracted from root path is empty: {rootPath}");
         }
 
         return tenant;

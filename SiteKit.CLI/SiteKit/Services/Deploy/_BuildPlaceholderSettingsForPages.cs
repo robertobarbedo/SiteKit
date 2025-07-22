@@ -220,7 +220,7 @@ namespace SiteKit.CLI.Services.Deploy
             try
             {
                 var site = args.SiteConfig.Site;
-                var renderingPath = $"{site.RenderingPath}/Pages/{pageType.Name}";
+                var renderingPath = $"{site.RenderingPath}/{pageType.Name}";
 
                 // Get the rendering item
                 var rendering = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, renderingPath, verbose: true);
@@ -247,7 +247,7 @@ namespace SiteKit.CLI.Services.Deploy
                 if (existingPlaceholders.IndexOf(globalPlaceholder.ItemId) == -1)
                 {
                     // Add the placeholder setting ID to the rendering's Placeholders field
-                    var updatedPlaceholders = existingPlaceholders + (existingPlaceholders == "" ? "" : "|") + globalPlaceholder.ItemId;
+                    var updatedPlaceholders = existingPlaceholders + (existingPlaceholders == "" ? "" : "|") + new Guid(globalPlaceholder.ItemId).ToString("B").ToUpperInvariant();
                     
                     var renderingFields = new Dictionary<string, string>
                     {

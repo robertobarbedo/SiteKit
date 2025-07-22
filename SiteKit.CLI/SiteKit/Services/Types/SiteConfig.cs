@@ -39,6 +39,12 @@ namespace SiteKit.Types
         [YamlMember(Alias = "site_placeholder_path")]
         public string SitePlaceholderPath { get; set; }
 
+        [YamlMember(Alias = "partial_designs_path")]
+        public string PartialDesignsPath { get; set; }
+
+        [YamlMember(Alias = "page_designs_path")]
+        public string PageDesignsPath { get; set; }
+
         public SiteDefaults Defaults { get; set; }
     }
 

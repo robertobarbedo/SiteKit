@@ -4,7 +4,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace SiteKit.CLI.Services.Shared
 {
-    public class _LoadYaml: IRun
+    public class _LoadYaml : IRun
     {
         public void Run(AutoArgs args)
         {
@@ -13,6 +13,7 @@ namespace SiteKit.CLI.Services.Shared
             args.PageTypesConfig = Parse<PageTypesConfig>(args.Yamls["pagetypes"]);
             args.CompositionConfig = Parse<CompositionConfig>(args.Yamls["composition"]);
             args.DictionaryConfig = Parse<DictionaryConfig>(args.Yamls["dictionary"]);
+            args.PartialsConfig = Parse<PartialsConfig>(args.Yamls["partials"]);
         }
         public T Parse<T>(string yaml)
         {
