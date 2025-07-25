@@ -100,8 +100,32 @@ namespace SiteKit.CLI.Services.Deploy
                 // Update template with base template and icon
                 var templateFields = new Dictionary<string, string>();
 
-                var baseTemplateId = await GetBaseTemplateIdAsync(args, pageType);
-                if (!string.IsNullOrEmpty(baseTemplateId))
+                //get base template path
+                string baseTemplatePath;
+                if (!string.IsNullOrWhiteSpace(args.SiteConfig.Site.Defaults.PageBaseTemplate))
+                    baseTemplatePath = args.SiteConfig.Site.Defaults.PageBaseTemplate;
+                else
+                    baseTemplatePath = args.SiteConfig.Site.SiteTemplatePath + "/Page";// Use default base template path
+
+                //compare to current template, can be path or ID
+                string contextTemplateComparer = "";
+                var baseTemplateId = "";
+                bool shouldUpdateBaseTemplate = true;
+                if (baseTemplatePath.StartsWith("{") || Guid.TryParse(baseTemplatePath, out _))
+                {
+                    contextTemplateComparer = templateId.Replace("{", "").Replace("}", "").Replace("-", "");
+                    baseTemplateId = baseTemplatePath.ToUpper();//is id
+                    shouldUpdateBaseTemplate = !contextTemplateComparer
+                        .Equals(baseTemplateId.Replace("{", "").Replace("}", "").Replace("-", ""), StringComparison.InvariantCultureIgnoreCase);
+                }
+                else
+                {
+                    contextTemplateComparer = templatePath;
+                    shouldUpdateBaseTemplate = !contextTemplateComparer.Equals(baseTemplatePath, StringComparison.InvariantCultureIgnoreCase);
+                    baseTemplateId = await GetBaseTemplateIdAsync(args, pageType, baseTemplatePath);
+                }
+
+                if (shouldUpdateBaseTemplate && !string.IsNullOrEmpty(baseTemplateId))
                 {
                     templateFields["__Base template"] = baseTemplateId;
                 }
@@ -394,31 +418,13 @@ namespace SiteKit.CLI.Services.Deploy
             }
         }
 
-        private async Task<string> GetBaseTemplateIdAsync(AutoArgs args, PageType pageType)
+        private async Task<string> GetBaseTemplateIdAsync(AutoArgs args, PageType pageType, string baseTemplatePath)
         {
             try
             {
-                string baseTemplatePath;
-                
-                if (!string.IsNullOrWhiteSpace(args.SiteConfig.Site.Defaults.PageBaseTemplate))
-                {
-                    baseTemplatePath = args.SiteConfig.Site.Defaults.PageBaseTemplate;
-                }
-                else
-                {
-                    // Use default base template path
-                    baseTemplatePath = args.SiteConfig.Site.SiteTemplatePath + "/Page";
-                }
-
-                // If it's already an ID (starts with { or is a GUID format), return it directly
-                if (baseTemplatePath.StartsWith("{") || Guid.TryParse(baseTemplatePath, out _))
-                {
-                    return baseTemplatePath;
-                }
-
                 // Otherwise, treat it as a path and get the item to retrieve its ID
                 var baseTemplateItem = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, baseTemplatePath, verbose: true);
-                
+
                 if (baseTemplateItem != null)
                 {
                     return baseTemplateItem.ItemId;

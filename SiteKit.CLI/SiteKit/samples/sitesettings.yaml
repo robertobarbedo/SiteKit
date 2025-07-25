@@ -12,6 +12,8 @@ site:
   site_placeholder_path: "$(site_placeholder_path)"
   partial_designs_path: "$(partial_designs_path)"
   page_designs_path: "$(page_designs_path)"
+  code:
+    components_path: "./headapps/nextjs-starter/src/components"
   defaults:
     page_base_template: ""
     page_workflow: ""

@@ -85,6 +85,8 @@ public class DeployService : BaseService, IDeployService
             new _BuildVariants(graphQLService, _logger).Run(args);
             WaitAndWrite("Building dictionary...");
             new _BuildDictionary(graphQLService, _logger).Run(args);
+            WaitAndWrite("Building page types components with placeholder examples..." + Environment.NewLine + " - path:" + args.SiteConfig?.Site?.Code?.ComponentsPath);
+            new _CodePageTypePlaceholderComponents(_logger).Run(args);
 
         }
 

@@ -92,7 +92,7 @@ namespace SiteKit.CLI.Services.Deploy
                 var renderingFields = new Dictionary<string, string>();
 
                 // Set component name (without spaces)
-                renderingFields["componentName"] = name.Replace(" ", "");
+                renderingFields["componentName"] = "_" + name.Replace(" ", ""); //Page Type Wrappers start with "_" for convention
 
                 // Set other properties for page containers (no auto datasource, but with dynamic placeholders)
                 renderingFields["OtherProperties"] = "IsRenderingsWithDynamicPlaceholders=true";
