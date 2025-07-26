@@ -1,6 +1,6 @@
 # SiteKit
 
-SiteKit is a command-line tool designed for Sitecore SXA projects. It provides scaffolding capabilities to help you build and manage Sitecore components with a simpler interface.
+SiteKit is a command-line tool designed for components and page types in Sitecore.
 
 ## Prerequisites
 
@@ -9,6 +9,7 @@ SiteKit is a command-line tool designed for Sitecore SXA projects. It provides s
 ## Important Notes
 
 - Always run the commands from the root folder of your project
+- Recommended VS Code Extension: Red Hat YAML
 
 ## Installation
 
