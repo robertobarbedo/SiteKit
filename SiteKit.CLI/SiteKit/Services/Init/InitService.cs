@@ -117,20 +117,21 @@ public class InitService : BaseService, IInitService
             
             // Remove leading slash from tenant for path building to avoid double slashes
             var tenantForPaths = tenant.TrimStart('/');
-            
-            // Replace placeholders
-            content = content
-                .Replace("$(name)", $"\"{site}\"")
-                .Replace("$(site_path)", $"/sitecore/content/{tenantForPaths}/{site}")
-                .Replace("$(dictionary_path)", $"/sitecore/content/{tenantForPaths}/{site}/Dictionary")
-                .Replace("$(site_template_path)", $"/sitecore/templates/Project/{tenantForPaths}")
-                .Replace("$(datasource_template_path)", $"/sitecore/templates/Feature/{tenantForPaths}")
-                .Replace("$(rendering_path)", $"/sitecore/layout/Renderings/Feature/{tenantForPaths}")
-                .Replace("$(placeholder_path)", $"/sitecore/layout/Placeholder Settings/Feature/{tenantForPaths}")
-                .Replace("$(available_renderings_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Available Renderings")
-                .Replace("$(site_placeholder_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Placeholder Settings")
-                .Replace("$(partial_designs_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Partial Designs")
-                .Replace("$(page_designs_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Page Designs");
+
+      // Replace placeholders
+      content = content
+          .Replace("$(name)", $"\"{site}\"")
+          .Replace("$(site_path)", $"/sitecore/content/{tenantForPaths}/{site}")
+          .Replace("$(dictionary_path)", $"/sitecore/content/{tenantForPaths}/{site}/Dictionary")
+          .Replace("$(site_template_path)", $"/sitecore/templates/Project/{tenantForPaths}")
+          .Replace("$(datasource_template_path)", $"/sitecore/templates/Feature/{tenantForPaths}")
+          .Replace("$(rendering_path)", $"/sitecore/layout/Renderings/Feature/{tenantForPaths}")
+          .Replace("$(placeholder_path)", $"/sitecore/layout/Placeholder Settings/Feature/{tenantForPaths}")
+          .Replace("$(available_renderings_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Available Renderings")
+          .Replace("$(site_placeholder_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Placeholder Settings")
+          .Replace("$(partial_designs_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Partial Designs")
+          .Replace("$(page_designs_path)", $"/sitecore/content/{tenantForPaths}/{site}/Presentation/Page Designs")
+          .Replace("$(code_components_path)", GetCodePath(siteDir, site));
 
             await File.WriteAllTextAsync(siteSettingsPath, content);
             
@@ -199,5 +200,28 @@ public class InitService : BaseService, IInitService
         }
 
         return tenant;
+    }
+
+    private string GetCodePath(string siteDir, string siteName)
+    {
+        // Get the current directory (project root)
+        var projectRoot = Directory.GetCurrentDirectory();
+        
+        // Define the two possible paths to check
+        var basicNextJsPath = Path.Combine(projectRoot, "examples", "basic-nextjs", "src", "components");
+        var nextJsStarterPath = Path.Combine(projectRoot, "headapps", "nextjs-starter", "src", "components");
+        
+        // Return the first path that exists
+        if (Directory.Exists(basicNextJsPath))
+        {
+            return basicNextJsPath;
+        }
+        else if (Directory.Exists(nextJsStarterPath))
+        {
+            return nextJsStarterPath;
+        }
+        
+        // If neither exists, return the first path as default (it will be created later if needed)
+        return nextJsStarterPath;
     }
 }
