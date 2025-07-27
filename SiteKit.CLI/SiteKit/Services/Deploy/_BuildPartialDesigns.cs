@@ -167,9 +167,12 @@ namespace SiteKit.CLI.Services.Deploy
             }
         }
 
-        private async Task<int> ProcessLayoutComponentsAsync(LayoutBuilder layoutBuilder, AutoArgs args, 
+        private async Task<int> ProcessLayoutComponentsAsync(LayoutBuilder layoutBuilder, AutoArgs args,
             List<SiteKit.Types.LayoutComponent> components, string accumulatedPlaceholder, int phId)
         {
+            string previousComponentName = "";
+            int indexComponent = 0;
+
             foreach (var component in components)
             {
                 try
@@ -183,22 +186,52 @@ namespace SiteKit.CLI.Services.Deploy
                         continue;
                     }
 
-                    phId++;
-
-                    // Get rendering ID and add to layout
-                    var renderingId = await GetComponentRenderingIdAsync(args, componentDefinition);
-                    if (renderingId != null)
+                    // Find composition component
+                    var compositionComponentKey = args.CompositionConfig.Composition.Components.Keys
+                        .FirstOrDefault(c => c == component.Component);
+                    if (compositionComponentKey == null)
                     {
-                        layoutBuilder.AddRendering(renderingId, accumulatedPlaceholder, phId);
+                        _logger.LogError($"Composition component key not found: {component.Component}");
+                        continue;
                     }
 
-                    // Process children recursively if they exist
-                    if (component.Children != null && component.Children.Any())
+                    var compositionComponent = args.CompositionConfig.Composition.Components[compositionComponentKey];
+                    if (compositionComponent == null)
                     {
-                        // Build child placeholder - simplified version for partials
-                        string childPlaceholder = $"{accumulatedPlaceholder}/{component.Component.Replace(" ", "-").ToLowerInvariant()}-{phId}";
-                        
-                        phId = await ProcessLayoutComponentsAsync(layoutBuilder, args, component.Children, childPlaceholder, phId);
+                        _logger.LogError($"Composition component not found: {component.Component}");
+                        continue;
+                    }
+
+                    // Handle component indexing
+                    if (previousComponentName != component.Component)
+                    {
+                        indexComponent = 0;
+                        previousComponentName = component.Component;
+                        phId++;
+
+                        // Get rendering ID and add to layout
+                        var renderingId = await GetComponentRenderingIdAsync(args, componentDefinition);
+                        if (renderingId != null)
+                        {
+                            layoutBuilder.AddRendering(renderingId, accumulatedPlaceholder, phId);
+                        }
+                    }
+                    else
+                    {
+                        indexComponent++;
+                    }
+
+                    // Build child placeholder
+                    if (indexComponent < compositionComponent.Keys.Count)
+                    {
+                        var keys = compositionComponent.Keys.ToList()[indexComponent];
+                        string childPlaceholder = $"{accumulatedPlaceholder}/{component.Component.Replace(" ", "-")}-{keys}-{phId - indexComponent}".ToLowerInvariant();
+
+                        // Process children recursively
+                        if (component.Children != null && component.Children.Any())
+                        {
+                            phId = await ProcessLayoutComponentsAsync(layoutBuilder, args, component.Children, childPlaceholder, phId);
+                        }
                     }
                 }
                 catch (Exception ex)
