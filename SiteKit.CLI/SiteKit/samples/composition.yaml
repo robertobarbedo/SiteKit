@@ -2,16 +2,16 @@
 composition:
   groups:
     common:
-      - Button
+      - My Rich Text
     containers:
-      - One Column
+      - Container Wrapper
 
   pages:
-    Content Page:
+    Page:
       main:
       - containers
 
   components:
-    One Column:
+    Container Wrapper:
       main:
-      - Button
+      - common

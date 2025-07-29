@@ -1,17 +1,10 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/schemas/pagetypes-schema.json
 pagetypes:
-  - name: Content Page
-    fields:
-      - name: Heading
-        type: Single-Line Text
-        default: "$name"
-      - name: Text
-        type: Rich Text
-        source: ""
-    layout:
-      - component: One Column
-        children: 
-          - component: One Column
-
+  - name: Homepage
+    insertoptions:
+      - Page
+  - name: Page
+    insertoptions:
+      - Page
     
     

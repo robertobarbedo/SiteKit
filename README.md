@@ -1,6 +1,6 @@
 # SiteKit
 
-SiteKit is a command-line tool designed for components and page types in Sitecore.
+SiteKit is a command-line tool designed to create components and page types in Sitecore from pre defined YAML files.
 
 ## Prerequisites
 

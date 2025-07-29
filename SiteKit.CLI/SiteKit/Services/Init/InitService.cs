@@ -214,11 +214,11 @@ public class InitService : BaseService, IInitService
         // Return the first path that exists
         if (Directory.Exists(basicNextJsPath))
         {
-            return basicNextJsPath;
+            return "./examples/basic-nextjs/src/components";
         }
         else if (Directory.Exists(nextJsStarterPath))
         {
-            return nextJsStarterPath;
+            return "./headapps/nextjs-starter/src/components";
         }
         
         // If neither exists, return the first path as default (it will be created later if needed)

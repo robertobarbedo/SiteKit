@@ -3,12 +3,9 @@ partials:
   - name: Header
     layout:
       - component: Container Wrapper
-        children: 
-          - component: One Column
+      
   - name: Footer
     layout:
       - component: Container Wrapper
-        children: 
-          - component: One Column
     
     

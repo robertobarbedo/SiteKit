@@ -3,7 +3,3 @@ dictionary:
   entries:
     - key: welcome
       phrase: "Welcome to MySite"
-    - key: sign_in
-      phrase: "Sign In:"
-    - key: sign_out
-      phrase: "Sign Out:"

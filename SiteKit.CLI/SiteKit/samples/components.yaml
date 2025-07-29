@@ -1,14 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/schemas/components-schema.json
 components:
-  - name: One Column
+
+  - name: Container Wrapper
     category: Page Structure
 
-  - name: Button
-    category: Navigation
-    icon: Office/32x32/link.png
-    variants:
-      - Primary
-      - Secondary
-    fields: 
-      - name: Link
-        type: General Link
+  - name: My Rich Text
+    category: Page Content
+    fields:
+      - name: Text
+        type: Rich Text
+        default: "<p>Write your content here: $name.</p>"
