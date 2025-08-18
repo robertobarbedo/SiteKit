@@ -1,4 +1,28 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/schemas/components-schema.json
+# Sample of component with all preperties for LLMs.
+#  - name: My Component
+#    category: My Category
+#    fields:
+#      - name: MyField
+#        type: Single-Line Text
+#        default: "My Default Value"
+#        section: "Different Section"
+#        source: "query:/."
+#    icon: "Office/32x32/link.png"
+#    variants:
+#      - Default
+#      - MyVariant1
+#      - MyVariant2
+#    parameters:
+#      - name: Background Color
+#        type: droplist
+#        styles:
+#          - name: Primary
+#            value: "#000000"
+#    rendering:
+#      - name: "__Sortorder"
+#        value: "100"
+
 components:
 
   - name: Container Wrapper

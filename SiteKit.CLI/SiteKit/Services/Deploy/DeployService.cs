@@ -47,6 +47,7 @@ public class DeployService : BaseService, IDeployService
         new _ValidatePartialsLayouts(_logger).Run(args);
         new _ValidateCompositionComponents(_logger).Run(args);
         new _ValidateInsertOptions(graphQLService, _logger).Run(args);
+        new _ValidateComponentParameters(graphQLService, _logger).Run(args);
 
         //deploy
         if (args.IsValid)
