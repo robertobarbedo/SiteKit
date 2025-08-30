@@ -5,7 +5,7 @@ namespace SiteKit.CLI.Services.Init;
 
 public interface IInitService
 {
-    Task InitializeAsync(string site, bool verbose);
+    Task InitializeAsync(string site, string environment, bool verbose);
 }
 
 public class InitService : BaseService, IInitService
@@ -18,13 +18,13 @@ public class InitService : BaseService, IInitService
         _graphQLService = graphQLService;
     }
 
-    public async Task InitializeAsync(string site, bool verbose)
+    public async Task InitializeAsync(string site, string environment, bool verbose)
     {
         var currentDir = Directory.GetCurrentDirectory();
         
         // Get access token and endpoint
         string accessToken = await GetAccessTokenAsync(currentDir, verbose);
-        string endpoint = await GetEndpointForEnvironment(currentDir, "default", verbose);
+        string endpoint = await GetEndpointForEnvironment(currentDir, environment, verbose);
 
         // Get site information from Sitecore
         var siteResponse = await _graphQLService.GetSiteAsync(endpoint, accessToken, site, verbose);

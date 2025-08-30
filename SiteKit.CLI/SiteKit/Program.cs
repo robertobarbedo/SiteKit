@@ -53,7 +53,7 @@ public class Program
         rootCommand.AddCommand(CreateValidateCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
 
         // Add init command
-        rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, verboseOption));
+        rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, environmentOption, verboseOption));
 
         //debug
         //args = (new List<String>() { "deploy", "-s", "NewSite" }).ToArray();
@@ -179,7 +179,7 @@ public class Program
         return command;
     }
 
-    private static Command CreateInitCommand(ServiceProvider serviceProvider, ILogger<Program> logger, Option<bool> verboseOption)
+    private static Command CreateInitCommand(ServiceProvider serviceProvider, ILogger<Program> logger, Option<string> environmentOption, Option<bool> verboseOption)
     {
         var siteOption = new Option<string>(
             aliases: new[] { "-s", "--site" },
@@ -191,10 +191,11 @@ public class Program
         var command = new Command("init", "Initialize SiteKit project with sample YAML files")
         {
             siteOption,
+            environmentOption,
             verboseOption
         };
 
-        command.SetHandler(async (site, verbose) =>
+        command.SetHandler(async (site, environment, verbose) =>
         {
             // Create service provider with correct verbose setting
             var services = new ServiceCollection();
@@ -207,12 +208,12 @@ public class Program
             if (verbose)
             {
                 verboseLogger.LogInformation("Verbose mode enabled");
-                verboseLogger.LogInformation($"Initializing SiteKit project for site: {site}");
+                verboseLogger.LogInformation($"Initializing SiteKit project for site: {site}, environment: {environment}");
             }
 
             try
             {
-                await siteKitService.InitializeAsync(site, verbose);
+                await siteKitService.InitializeAsync(site, environment, verbose);
                 if (!verbose)
                 {
                     // Only show essential completion message in non-verbose mode
@@ -228,7 +229,7 @@ public class Program
                 verboseLogger.LogError(ex, "Initialization failed");
                 Environment.Exit(1);
             }
-        }, siteOption, verboseOption);
+        }, siteOption, environmentOption, verboseOption);
 
         return command;
     }
