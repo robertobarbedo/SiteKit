@@ -86,10 +86,11 @@
           },
           "layout": {
             "type": "array",
-            "description": "Layout structure with nested components",
+            "description": "Layout structure definition for this page type",
             "items": {
-              "$ref": "#/$defs/layoutItem"
-            }
+              "$ref": "#/definitions/layoutComponent"
+            },
+            "minItems": 1
           },
           "insertoptions": {
             "type": "array",
@@ -106,50 +107,61 @@
     }
   },
   "additionalProperties": false,
-  "$defs": {
-    "layoutItem": {
-      "oneOf": [
-        {
+  "definitions": {
+    "layoutComponent": {
+      "type": "object",
+      "required": ["component"],
+      "properties": {
+        "component": {
           "type": "string",
-          "description": "Component name",
-          "minLength": 1
+          "description": "Component name - must match a component defined in components.yaml",
+          "minLength": 1,
+          "pattern": "^[A-Z][a-zA-Z0-9]*( [A-Z][a-zA-Z0-9]*)*$",
+          "examples": ["Container Wrapper", "One Column", "Two Column", "Header", "Footer"]
         },
-        {
+        "children": {
+          "type": "array",
+          "description": "Child components nested within this component",
+          "items": {
+            "$ref": "#/definitions/layoutComponent"
+          },
+          "minItems": 1
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Target placeholder name for this component",
+          "minLength": 1,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9-_]*$",
+          "examples": ["main", "content", "header", "footer", "sidebar"]
+        },
+        "datasource": {
           "type": "object",
-          "description": "Layout component with optional children",
-          "required": ["component"],
+          "description": "Datasource configuration for this component instance",
           "properties": {
-            "component": {
+            "path": {
               "type": "string",
-              "description": "Component name",
-              "minLength": 1
+              "description": "Sitecore item path for datasource",
+              "minLength": 1,
+              "pattern": "^/sitecore/.*$"
             },
-            "children": {
-              "type": "array",
-              "description": "Child layout items",
-              "items": {
-                "$ref": "#/$defs/layoutItem"
-              }
+            "template": {
+              "type": "string",
+              "description": "Template name or ID for datasource items",
+              "minLength": 1
             }
           },
-          "additionalProperties": false
+          "additionalProperties": true
         },
-        {
+        "parameters": {
           "type": "object",
-          "patternProperties": {
-            ".*": {
-              "type": "array",
-              "description": "Nested layout items (legacy format)",
-              "items": {
-                "$ref": "#/$defs/layoutItem"
-              }
-            }
-          },
-          "additionalProperties": false,
-          "minProperties": 1,
-          "maxProperties": 1
+          "description": "Rendering parameters for this component instance",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Parameter value"
+          }
         }
-      ]
+      },
+      "additionalProperties": false
     }
   }
 } 
