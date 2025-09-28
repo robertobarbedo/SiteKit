@@ -168,16 +168,16 @@ namespace SiteKit.CLI.Services.Deploy
                         .FirstOrDefault(c => c == component.Component);
                     if (compositionComponentKey == null)
                     {
-                        _logger.LogError($"Composition component key not found: {component.Component}");
-                        continue;
+                        //_logger.LogError($"Composition component key not found: {component.Component}");
+                        //continue;
                     }
 
-                    var compositionComponent = args.CompositionConfig.Composition.Components[compositionComponentKey];
-                    if (compositionComponent == null)
-                    {
-                        _logger.LogError($"Composition component not found: {component.Component}");
-                        continue;
-                    }
+                    var compositionComponent = compositionComponentKey == null ? null : args.CompositionConfig.Composition.Components[compositionComponentKey];
+                    //if (compositionComponent == null)
+                    //{
+                        //_logger.LogError($"Composition component not found: {component.Component}");
+                        //continue;
+                    //}
 
                     // Handle component indexing
                     if (previousComponentName != component.Component)
@@ -199,7 +199,7 @@ namespace SiteKit.CLI.Services.Deploy
                     }
 
                     // Build child placeholder
-                    if (indexComponent < compositionComponent.Keys.Count)
+                    if (compositionComponent != null && indexComponent < compositionComponent.Keys.Count)
                     {
                         var keys = compositionComponent.Keys.ToList()[indexComponent];
                         string childPlaceholder = $"{accumulatedPlaceholder}/{component.Component.Replace(" ", "-")}-{keys}-{phId - indexComponent}".ToLowerInvariant();

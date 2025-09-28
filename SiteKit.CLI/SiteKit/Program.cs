@@ -56,7 +56,7 @@ public class Program
         rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, environmentOption, verboseOption));
 
         //debug
-        //args = (new List<String>() { "deploy", "-s", "NewSite" }).ToArray();
+        //args = (new List<String>() { "deploy", "-s", "SUGBR" }).ToArray();
 
         return await rootCommand.InvokeAsync(args);
     }

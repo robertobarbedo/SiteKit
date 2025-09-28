@@ -58,7 +58,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 // Build the partial design item path
                 string partialPath = $"{args.SiteConfig.Site.PartialDesignsPath}/{partial.Name}";
-                
+
                 // Try to get existing partial design item
                 var existingItem = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, partialPath, verbose: true);
 
@@ -103,7 +103,7 @@ namespace SiteKit.CLI.Services.Deploy
 
                 // Build the layout XML
                 var layoutXml = await BuildLayoutXmlAsync(args, partial);
-                
+
                 // Update the partial design item with the layout
                 var fields = new Dictionary<string, string>
                 {
@@ -141,7 +141,7 @@ namespace SiteKit.CLI.Services.Deploy
                 if (partial.Layout != null && partial.Layout.Any())
                 {
                     string accumulatedPlaceholder = $"/{mainPlaceholderName}";
-                    
+
                     phId = await ProcessLayoutComponentsAsync(layoutBuilder, args, partial.Layout, accumulatedPlaceholder, phId);
                 }
 
@@ -191,16 +191,15 @@ namespace SiteKit.CLI.Services.Deploy
                         .FirstOrDefault(c => c == component.Component);
                     if (compositionComponentKey == null)
                     {
-                        _logger.LogError($"Composition component key not found: {component.Component}");
-                        continue;
+                        //_logger.LogError($"Composition component key not found: {component.Component}");
+                        //continue;
                     }
-
-                    var compositionComponent = args.CompositionConfig.Composition.Components[compositionComponentKey];
-                    if (compositionComponent == null)
-                    {
-                        _logger.LogError($"Composition component not found: {component.Component}");
-                        continue;
-                    }
+                    var compositionComponent = compositionComponentKey == null ? null : args.CompositionConfig.Composition.Components[compositionComponentKey];
+                    //if (compositionComponent == null)
+                    //{
+                        //_logger.LogError($"Composition component not found: {component.Component}");
+                        //continue;
+                    //}
 
                     // Handle component indexing
                     if (previousComponentName != component.Component)
@@ -222,7 +221,7 @@ namespace SiteKit.CLI.Services.Deploy
                     }
 
                     // Build child placeholder
-                    if (indexComponent < compositionComponent.Keys.Count)
+                    if (compositionComponent != null && indexComponent < compositionComponent.Keys.Count)
                     {
                         var keys = compositionComponent.Keys.ToList()[indexComponent];
                         string childPlaceholder = $"{accumulatedPlaceholder}/{component.Component.Replace(" ", "-")}-{keys}-{phId - indexComponent}".ToLowerInvariant();
@@ -249,7 +248,7 @@ namespace SiteKit.CLI.Services.Deploy
             {
                 // Build the rendering path
                 string renderingPath = $"{args.SiteConfig.Site.RenderingPath}/{componentDefinition.Category}/{componentDefinition.Name}";
-                
+
                 // Get the rendering item
                 var renderingItem = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, renderingPath, verbose: true);
 
