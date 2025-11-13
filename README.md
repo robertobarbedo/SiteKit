@@ -11,7 +11,6 @@ SiteKit is a command-line tool designed to create components and page types in S
 - Always run the commands from the root folder of your project
 - Recommended VS Code Extension: Red Hat YAML
 
-
 ## Installation
 
 ### Step 1: Download the CLI Package
