@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/schemas/navigation-schema.json",
+  "title": "Sitecore Navigation Configuration",
+  "description": "JSON Schema for Sitecore navigation.yaml configuration file",
+  "type": "object",
+  "required": ["navigation"],
+  "properties": {
+    "navigation": {
+      "type": "object",
+      "description": "Navigation configuration containing templates and menus",
+      "required": ["templates", "menus"],
+      "properties": {
+        "templates": {
+          "type": "object",
+          "description": "Template IDs for navigation items",
+          "required": ["menu", "menuitem"],
+          "properties": {
+            "menu": {
+              "type": "string",
+              "description": "Template ID for menu container",
+              "minLength": 1,
+              "examples": ["111", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
+            },
+            "menuitem": {
+              "type": "string",
+              "description": "Template ID for menu item",
+              "minLength": 1,
+              "examples": ["11111", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "menus": {
+          "type": "object",
+          "description": "Menu definitions by name (header, footer, etc.)",
+          "patternProperties": {
+            "^[a-zA-Z][a-zA-Z0-9_-]*$": {
+              "type": "array",
+              "description": "Array of menu items for this menu",
+              "items": {
+                "$ref": "#/definitions/menuItem"
+              },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "menuItem": {
+      "type": "object",
+      "description": "A navigation menu item with label, link, and optional children",
+      "required": ["label", "link"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Display label for the menu item",
+          "minLength": 1,
+          "examples": ["Home", "About Us", "Products", "Contact"]
+        },
+        "link": {
+          "type": "string",
+          "description": "URL or path for the menu item",
+          "minLength": 1,
+          "examples": ["/", "/about-us", "/products", "https://example.com"]
+        },
+        "children": {
+          "type": "array",
+          "description": "Nested child menu items (submenu)",
+          "items": {
+            "$ref": "#/definitions/menuItem"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
