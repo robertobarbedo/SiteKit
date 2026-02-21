@@ -53,6 +53,25 @@
           "type": "string",
           "description": "Page designs path - location where page design templates are stored"
         },
+        "templates": {
+          "type": "object",
+          "description": "Template IDs for navigation items",
+          "properties": {
+            "menu_domain": {
+              "type": "string",
+              "description": "Template ID for menu domain container"
+            },
+            "menu": {
+              "type": "string",
+              "description": "Template ID for menu container"
+            },
+            "menuitem": {
+              "type": "string",
+              "description": "Template ID for menu item"
+            }
+          },
+          "additionalProperties": false
+        },
         "defaults": {
           "type": "object",
           "properties": {

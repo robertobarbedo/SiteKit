@@ -22,14 +22,14 @@ namespace SiteKit.CLI.Services.Content
 
         public async Task ProcessAsync(AutoArgs args)
         {
-            var menuTemplateId = args.NavigationConfig?.Navigation?.Templates?.Menu;
+            var menuTemplateId = args.SiteConfig?.Site?.Templates?.Menu;
             if (string.IsNullOrEmpty(menuTemplateId))
             {
                 _logger.LogDebug("Menu template ID not set in navigation.yaml, skipping menu creation");
                 return;
             }
 
-            var menuItemTemplateId = args.NavigationConfig?.Navigation?.Templates?.MenuItem;
+            var menuItemTemplateId = args.SiteConfig?.Site?.Templates?.MenuItem;
             if (string.IsNullOrEmpty(menuItemTemplateId))
             {
                 _logger.LogDebug("Menu Item template ID not set in navigation.yaml, skipping menu creation");

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using YamlDotNet.Serialization;
 
 namespace SiteKit.Types
@@ -47,6 +47,8 @@ namespace SiteKit.Types
 
         public SiteCode? Code { get; set; }
 
+        public SiteTemplates? Templates { get; set; }
+
         public SiteDefaults? Defaults { get; set; }
     }
 
@@ -54,6 +56,18 @@ namespace SiteKit.Types
     {
         [YamlMember(Alias = "components_path")]
         public string? ComponentsPath { get; set; }
+    }
+
+    public class SiteTemplates
+    {
+        [YamlMember(Alias = "menu_domain")]
+        public string? MenuDomain { get; set; }
+
+        [YamlMember(Alias = "menu")]
+        public string? Menu { get; set; }
+
+        [YamlMember(Alias = "menuitem")]
+        public string? MenuItem { get; set; }
     }
 
     public class SiteDefaults

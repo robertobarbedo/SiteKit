@@ -8,32 +8,9 @@
   "properties": {
     "navigation": {
       "type": "object",
-      "description": "Navigation configuration containing templates and menus",
-      "required": ["templates", "menus"],
+      "description": "Navigation configuration containing menus",
+      "required": ["menus"],
       "properties": {
-        "templates": {
-          "type": "object",
-          "description": "Template IDs for navigation items",
-          "required": ["menu_domain", "menu", "menuitem"],
-          "properties": {
-            "menu_domain": {
-              "type": "string",
-              "description": "Template ID for menu domain container",
-              "examples": ["", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
-            },
-            "menu": {
-              "type": "string",
-              "description": "Template ID for menu container",
-              "examples": ["", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
-            },
-            "menuitem": {
-              "type": "string",
-              "description": "Template ID for menu item",
-              "examples": ["", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
-            }
-          },
-          "additionalProperties": false
-        },
         "menus": {
           "type": "object",
           "description": "Menu definitions by name (header, footer, etc.)",

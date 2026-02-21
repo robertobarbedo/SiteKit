@@ -19,11 +19,11 @@ public class _CreateMenuDomain : IRun
     {
         try
         {
-            var templateId = args.NavigationConfig?.Navigation?.Templates?.MenuDomain;
+            var templateId = args.SiteConfig?.Site?.Templates?.MenuDomain;
             if (string.IsNullOrEmpty(templateId))
             {
                 args.IsValid = false;
-                args.ValidationMessage = "Menu Domain template ID not found in navigation.yaml";
+                args.ValidationMessage = "Menu Domain template ID not found in sitesettings.yaml";
                 return;
             }
 

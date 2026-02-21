@@ -1,9 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/robertobarbedo/SiteKit/refs/heads/main/SiteKit.CLI/SiteKit/schemas/navigation-schema.json
 navigation:
-  templates:
-    menu_domain: ""
-    menu: ""
-    menuitem: ""
   menus:
     header:
     - label: Home

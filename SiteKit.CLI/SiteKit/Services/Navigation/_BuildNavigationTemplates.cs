@@ -102,8 +102,8 @@ public class _BuildNavigationTemplates : IRun
             UpdateMastersField(args, menuStdValuesId, menuItemTemplateId).Wait();
             UpdateMastersField(args, menuItemStdValuesId, menuItemTemplateId).Wait();
 
-            // Step 10: Update navigation.yaml with template IDs
-            UpdateNavigationYaml(args, menuDomainTemplateId, menuTemplateId, menuItemTemplateId);
+            // Step 10: Update sitesettings.yaml with template IDs
+            UpdateSiteSettingsYaml(args, menuDomainTemplateId, menuTemplateId, menuItemTemplateId);
 
             _logger.LogInformation("✓ Navigation templates created successfully");
             _logger.LogInformation($"  Menu Domain Template ID: {menuDomainTemplateId}");
@@ -397,22 +397,22 @@ public class _BuildNavigationTemplates : IRun
         }
     }
 
-    private void UpdateNavigationYaml(AutoArgs args, string navDomainTemplateId, string menuTemplateId, string menuItemTemplateId)
+    private void UpdateSiteSettingsYaml(AutoArgs args, string menuDomainTemplateId, string menuTemplateId, string menuItemTemplateId)
     {
         try
         {
-            _logger.LogInformation("Updating navigation.yaml with template IDs...");
+            _logger.LogInformation("Updating sitesettings.yaml with template IDs...");
 
-            var navigationYamlPath = Path.Combine(args.Directory!, ".sitekit", args.SiteName, "navigation.yaml");
+            var siteSettingsPath = Path.Combine(args.Directory!, ".sitekit", args.SiteName, "sitesettings.yaml");
 
-            if (!File.Exists(navigationYamlPath))
+            if (!File.Exists(siteSettingsPath))
             {
-                _logger.LogWarning($"navigation.yaml not found at: {navigationYamlPath}");
+                _logger.LogWarning($"sitesettings.yaml not found at: {siteSettingsPath}");
                 return;
             }
 
             // Read the current YAML content
-            var yamlContent = File.ReadAllText(navigationYamlPath);
+            var yamlContent = File.ReadAllText(siteSettingsPath);
 
             // Parse it
             var deserializer = new DeserializerBuilder()
@@ -420,25 +420,30 @@ public class _BuildNavigationTemplates : IRun
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-            var navigationConfig = deserializer.Deserialize<NavigationConfig>(yamlContent);
+            var siteConfig = deserializer.Deserialize<SiteConfig>(yamlContent);
 
-            if (navigationConfig?.Navigation?.Templates == null)
+            if (siteConfig?.Site == null)
             {
-                _logger.LogWarning("Invalid navigation.yaml structure");
+                _logger.LogWarning("Invalid sitesettings.yaml structure");
                 return;
             }
 
+            if (siteConfig.Site.Templates == null)
+            {
+                siteConfig.Site.Templates = new SiteTemplates();
+            }
+
             // Update the template IDs
-            navigationConfig.Navigation.Templates.MenuDomain = navDomainTemplateId;
-            navigationConfig.Navigation.Templates.Menu = menuTemplateId;
-            navigationConfig.Navigation.Templates.MenuItem = menuItemTemplateId;
+            siteConfig.Site.Templates.MenuDomain = menuDomainTemplateId;
+            siteConfig.Site.Templates.Menu = menuTemplateId;
+            siteConfig.Site.Templates.MenuItem = menuItemTemplateId;
 
             // Serialize back to YAML
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
 
-            var updatedYaml = serializer.Serialize(navigationConfig);
+            var updatedYaml = serializer.Serialize(siteConfig);
 
             // Preserve the schema header if it exists
             var lines = yamlContent.Split('\n');
@@ -450,15 +455,14 @@ public class _BuildNavigationTemplates : IRun
             }
 
             // Write back to file
-            File.WriteAllText(navigationYamlPath, updatedYaml);
+            File.WriteAllText(siteSettingsPath, updatedYaml);
 
-            _logger.LogInformation($"✓ Updated navigation.yaml with template IDs");
-            _logger.LogInformation($"  File: {navigationYamlPath}");
+            _logger.LogInformation($"✓ Updated sitesettings.yaml with template IDs");
+            _logger.LogInformation($"  File: {siteSettingsPath}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating navigation.yaml");
-            // Don't fail the entire process if YAML update fails
+            _logger.LogError(ex, "Error updating sitesettings.yaml");
         }
     }
 }

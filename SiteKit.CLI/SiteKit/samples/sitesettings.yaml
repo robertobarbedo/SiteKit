@@ -14,6 +14,10 @@ site:
   page_designs_path: "$(page_designs_path)"
   code:
     components_path: "$(code_components_path)"
+  templates:
+    menu_domain: ""
+    menu: ""
+    menuitem: ""
   defaults:
     page_base_template: ""
     page_workflow: ""

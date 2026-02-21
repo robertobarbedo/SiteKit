@@ -10,20 +10,7 @@ namespace SiteKit.Types
 
     public class NavigationDefinition
     {
-        public NavigationTemplates? Templates { get; set; }
         public Dictionary<string, List<MenuItem>>? Menus { get; set; }
-    }
-
-    public class NavigationTemplates
-    {
-        [YamlMember(Alias = "menu_domain")]
-        public string? MenuDomain { get; set; }
-
-        [YamlMember(Alias = "menu")]
-        public string? Menu { get; set; }
-
-        [YamlMember(Alias = "menuitem")]
-        public string? MenuItem { get; set; }
     }
 
     public class MenuItem
