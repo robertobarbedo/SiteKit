@@ -41,8 +41,8 @@ public class NavigationService : BaseService, INavigationService
         new _ReadYaml().Run(args);
         new _LoadYaml().Run(args);
 
-        WaitAndWrite("Creating Navigation Domain item...");
-        new _CreateNavigationDomain(graphQLService, _logger).Run(args);
+        WaitAndWrite("Creating Menu Domain item...");
+        new _CreateMenuDomain(graphQLService, _logger).Run(args);
         if (!args.IsValid) { ShowError(args); return; }
 
         Console.WriteLine("Navigation execution successful.");

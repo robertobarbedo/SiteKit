@@ -16,8 +16,8 @@ namespace SiteKit.Types
 
     public class NavigationTemplates
     {
-        [YamlMember(Alias = "navigation_domain")]
-        public string? NavigationDomain { get; set; }
+        [YamlMember(Alias = "menu_domain")]
+        public string? MenuDomain { get; set; }
 
         [YamlMember(Alias = "menu")]
         public string? Menu { get; set; }

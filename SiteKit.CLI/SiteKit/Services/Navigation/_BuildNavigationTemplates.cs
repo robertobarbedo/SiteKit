@@ -38,12 +38,12 @@ public class _BuildNavigationTemplates : IRun
                 return;
             }
 
-            // Step 2: Create Navigation Domain template
-            var navDomainTemplateId = CreateNavigationDomainTemplate(args, siteKitFolderId).Result;
-            if (string.IsNullOrEmpty(navDomainTemplateId))
+            // Step 2: Create Menu Domain template
+            var menuDomainTemplateId = CreateMenuDomainTemplate(args, siteKitFolderId).Result;
+            if (string.IsNullOrEmpty(menuDomainTemplateId))
             {
                 args.IsValid = false;
-                args.ValidationMessage = "Failed to create Navigation Domain template";
+                args.ValidationMessage = "Failed to create Menu Domain template";
                 return;
             }
 
@@ -65,12 +65,12 @@ public class _BuildNavigationTemplates : IRun
                 return;
             }
 
-            // Step 5: Create Standard Values for Navigation Domain template
-            var navDomainStdValuesId = CreateStandardValues(args, "Navigation Domain", navDomainTemplateId, SITEKIT_FOLDER_PATH).Result;
-            if (string.IsNullOrEmpty(navDomainStdValuesId))
+            // Step 5: Create Standard Values for Menu Domain template
+            var menuDomainStdValuesId = CreateStandardValues(args, "Menu Domain", menuDomainTemplateId, SITEKIT_FOLDER_PATH).Result;
+            if (string.IsNullOrEmpty(menuDomainStdValuesId))
             {
                 args.IsValid = false;
-                args.ValidationMessage = "Failed to create Standard Values for Navigation Domain template";
+                args.ValidationMessage = "Failed to create Standard Values for Menu Domain template";
                 return;
             }
 
@@ -93,20 +93,20 @@ public class _BuildNavigationTemplates : IRun
             }
 
             // Step 8: Set __Icon on template items
-            SetIconOnItem(args, navDomainTemplateId, "Office/32x32/navigate_subitems.png").Wait();
+            SetIconOnItem(args, menuDomainTemplateId, "Office/32x32/navigate_subitems.png").Wait();
             SetIconOnItem(args, menuTemplateId, "Office/32x32/list_style_bullets.png").Wait();
             SetIconOnItem(args, menuItemTemplateId, "Office/32x32/navigate_minus.png").Wait();
 
             // Step 9: Update __Masters field for standard values
-            UpdateMastersField(args, navDomainStdValuesId, menuTemplateId).Wait();
+            UpdateMastersField(args, menuDomainStdValuesId, menuTemplateId).Wait();
             UpdateMastersField(args, menuStdValuesId, menuItemTemplateId).Wait();
             UpdateMastersField(args, menuItemStdValuesId, menuItemTemplateId).Wait();
 
             // Step 10: Update navigation.yaml with template IDs
-            UpdateNavigationYaml(args, navDomainTemplateId, menuTemplateId, menuItemTemplateId);
+            UpdateNavigationYaml(args, menuDomainTemplateId, menuTemplateId, menuItemTemplateId);
 
             _logger.LogInformation("✓ Navigation templates created successfully");
-            _logger.LogInformation($"  Navigation Domain Template ID: {navDomainTemplateId}");
+            _logger.LogInformation($"  Menu Domain Template ID: {menuDomainTemplateId}");
             _logger.LogInformation($"  Menu Template ID: {menuTemplateId}");
             _logger.LogInformation($"  Menu Item Template ID: {menuItemTemplateId}");
         }
@@ -160,32 +160,32 @@ public class _BuildNavigationTemplates : IRun
         return siteKitFolderId;
     }
 
-    private async Task<string?> CreateNavigationDomainTemplate(AutoArgs args, string parentId)
+    private async Task<string?> CreateMenuDomainTemplate(AutoArgs args, string parentId)
     {
-        var templatePath = $"{SITEKIT_FOLDER_PATH}/Navigation Domain";
-        _logger.LogDebug($"Checking if Navigation Domain template exists at: {templatePath}");
+        var templatePath = $"{SITEKIT_FOLDER_PATH}/Menu Domain";
+        _logger.LogDebug($"Checking if Menu Domain template exists at: {templatePath}");
 
         var existingTemplate = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, templatePath, verbose: true);
         
         if (existingTemplate != null)
         {
-            _logger.LogInformation($"✓ Navigation Domain template already exists (ID: {existingTemplate.ItemId})");
+            _logger.LogInformation($"✓ Menu Domain template already exists (ID: {existingTemplate.ItemId})");
             return existingTemplate.ItemId;
         }
 
-        _logger.LogInformation("Creating Navigation Domain template...");
+        _logger.LogInformation("Creating Menu Domain template...");
         
         var templateResponse = await _graphQLService.CreateTemplateAsync(
             args.Endpoint,
             args.AccessToken,
-            "Navigation Domain",
+            "Menu Domain",
             parentId,
             sections: null,
             verbose: true);
 
         if (templateResponse == null)
         {
-            _logger.LogError("Failed to create Navigation Domain template");
+            _logger.LogError("Failed to create Menu Domain template");
             return null;
         }
 
@@ -193,11 +193,11 @@ public class _BuildNavigationTemplates : IRun
         
         if (createdTemplate == null)
         {
-            _logger.LogError($"Failed to retrieve created Navigation Domain template at path: {templatePath}");
+            _logger.LogError($"Failed to retrieve created Menu Domain template at path: {templatePath}");
             return null;
         }
 
-        _logger.LogInformation($"✓ Created Navigation Domain template (ID: {createdTemplate.ItemId})");
+        _logger.LogInformation($"✓ Created Menu Domain template (ID: {createdTemplate.ItemId})");
         return createdTemplate.ItemId;
     }
 
@@ -429,7 +429,7 @@ public class _BuildNavigationTemplates : IRun
             }
 
             // Update the template IDs
-            navigationConfig.Navigation.Templates.NavigationDomain = navDomainTemplateId;
+            navigationConfig.Navigation.Templates.MenuDomain = navDomainTemplateId;
             navigationConfig.Navigation.Templates.Menu = menuTemplateId;
             navigationConfig.Navigation.Templates.MenuItem = menuItemTemplateId;
 

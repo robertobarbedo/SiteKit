@@ -14,11 +14,11 @@
         "templates": {
           "type": "object",
           "description": "Template IDs for navigation items",
-          "required": ["navigation_domain", "menu", "menuitem"],
+          "required": ["menu_domain", "menu", "menuitem"],
           "properties": {
-            "navigation_domain": {
+            "menu_domain": {
               "type": "string",
-              "description": "Template ID for navigation domain container",
+              "description": "Template ID for menu domain container",
               "examples": ["", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
             },
             "menu": {
