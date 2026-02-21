@@ -1,3 +1,4 @@
+using SiteKit.CLI.Services.Content;
 using SiteKit.CLI.Services.Deploy;
 using SiteKit.CLI.Services.Init;
 using SiteKit.CLI.Services.Validate;
@@ -11,6 +12,7 @@ public interface ISiteKitService
     Task ValidateAsync(string siteName, string environment, bool verbose);
     Task InitializeAsync(string site, string environment, bool verbose);
     Task NavigationAsync(string siteName, string environment, bool verbose);
+    Task ContentAsync(string siteName, string environment, bool verbose);
 }
 
 public class SiteKitService : ISiteKitService
@@ -19,17 +21,20 @@ public class SiteKitService : ISiteKitService
     private readonly IDeployService _deployService;
     private readonly IValidateService _validateService;
     private readonly INavigationService _navigationService;
+    private readonly IContentService _contentService;
 
     public SiteKitService(
         IInitService initService,
         IDeployService deployService,
         IValidateService validateService,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        IContentService contentService)
     {
         _initService = initService;
         _deployService = deployService;
         _validateService = validateService;
         _navigationService = navigationService;
+        _contentService = contentService;
     }
 
     public async Task DeployAsync(string siteName, string environment, bool verbose)
@@ -50,5 +55,10 @@ public class SiteKitService : ISiteKitService
     public async Task NavigationAsync(string siteName, string environment, bool verbose)
     {
         await _navigationService.NavigationAsync(siteName, environment, verbose);
+    }
+
+    public async Task ContentAsync(string siteName, string environment, bool verbose)
+    {
+        await _contentService.ContentAsync(siteName, environment, verbose);
     }
 }

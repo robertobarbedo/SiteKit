@@ -6,6 +6,7 @@ using SiteKit.CLI.Services.Deploy;
 using SiteKit.CLI.Services.Init;
 using SiteKit.CLI.Services.Validate;
 using SiteKit.CLI.Services.Navigation;
+using SiteKit.CLI.Services.Content;
 
 namespace SiteKit.CLI;
 
@@ -59,6 +60,9 @@ public class Program
         // Add navigation command
         rootCommand.AddCommand(CreateNavigationCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
 
+        // Add content command
+        rootCommand.AddCommand(CreateContentCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
+
         //debug
         //args = (new List<String>() { "init", "-s", "BasicSite" }).ToArray();
 
@@ -93,6 +97,7 @@ public class Program
         services.AddScoped<IDeployService, DeployService>();
         services.AddScoped<IValidateService, ValidateService>();
         services.AddScoped<INavigationService, NavigationService>();
+        services.AddScoped<IContentService, ContentService>();
         services.AddScoped<ISiteKitService, SiteKitService>();
     }
 
@@ -276,6 +281,50 @@ public class Program
             catch (Exception ex)
             {
                 verboseLogger.LogError(ex, "Navigation failed");
+                Environment.Exit(1);
+            }
+        }, siteOption, environmentOption, verboseOption);
+
+        return command;
+    }
+
+    private static Command CreateContentCommand(ServiceProvider serviceProvider, ILogger<Program> logger,
+        Option<string> siteOption, Option<string> environmentOption, Option<bool> verboseOption)
+    {
+        var command = new Command("content", "Deploy content items to Sitecore")
+        {
+            siteOption,
+            environmentOption,
+            verboseOption
+        };
+
+        command.SetHandler(async (site, environment, verbose) =>
+        {
+            // Create service provider with correct verbose setting
+            var services = new ServiceCollection();
+            ConfigureServices(services, verbose);
+            var verboseServiceProvider = services.BuildServiceProvider();
+            var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
+
+            var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
+
+            if (verbose)
+            {
+                verboseLogger.LogDebug("Verbose mode enabled");
+                verboseLogger.LogDebug($"Starting content deployment for site: {site}, environment: {environment}");
+            }
+
+            try
+            {
+                await siteKitService.ContentAsync(site, environment, verbose);
+                if (verbose)
+                {
+                    verboseLogger.LogInformation("Content deployment Finished");
+                }
+            }
+            catch (Exception ex)
+            {
+                verboseLogger.LogError(ex, "Content deployment failed");
                 Environment.Exit(1);
             }
         }, siteOption, environmentOption, verboseOption);
