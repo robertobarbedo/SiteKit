@@ -1,4 +1,4 @@
-﻿using SiteKit.Types;
+using SiteKit.Types;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -14,6 +14,11 @@ namespace SiteKit.CLI.Services.Shared
             args.CompositionConfig = Parse<CompositionConfig>(args.Yamls["composition"]);
             args.DictionaryConfig = Parse<DictionaryConfig>(args.Yamls["dictionary"]);
             args.PartialsConfig = Parse<PartialsConfig>(args.Yamls["partials"]);
+            
+            if (args.Yamls.ContainsKey("navigation"))
+            {
+                args.NavigationConfig = Parse<NavigationConfig>(args.Yamls["navigation"]);
+            }
         }
         public T Parse<T>(string yaml)
         {

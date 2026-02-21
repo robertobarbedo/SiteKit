@@ -15,6 +15,7 @@ namespace SiteKit
         public CompositionConfig? CompositionConfig { get; set; }
         public DictionaryConfig? DictionaryConfig { get; set; }
         public PartialsConfig? PartialsConfig { get; set; }
+        public NavigationConfig? NavigationConfig { get; set; }
         public bool IsValid { get; set; }
         public string ValidationMessage { get; set; }
         public string? Directory { get;set; }

@@ -1,10 +1,11 @@
-﻿using System.CommandLine;
+using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SiteKit.CLI.Services;
 using SiteKit.CLI.Services.Deploy;
 using SiteKit.CLI.Services.Init;
 using SiteKit.CLI.Services.Validate;
+using SiteKit.CLI.Services.Navigation;
 
 namespace SiteKit.CLI;
 
@@ -55,8 +56,11 @@ public class Program
         // Add init command
         rootCommand.AddCommand(CreateInitCommand(serviceProvider, logger, environmentOption, verboseOption));
 
+        // Add navigation command
+        rootCommand.AddCommand(CreateNavigationCommand(serviceProvider, logger, siteOption, environmentOption, verboseOption));
+
         //debug
-        //args = (new List<String>() { "deploy", "-s", "SUGBR" }).ToArray();
+        //args = (new List<String>() { "init", "-s", "BasicSite" }).ToArray();
 
         return await rootCommand.InvokeAsync(args);
     }
@@ -88,6 +92,7 @@ public class Program
         services.AddScoped<IInitService, InitService>();
         services.AddScoped<IDeployService, DeployService>();
         services.AddScoped<IValidateService, ValidateService>();
+        services.AddScoped<INavigationService, NavigationService>();
         services.AddScoped<ISiteKitService, SiteKitService>();
     }
 
@@ -230,6 +235,58 @@ public class Program
                 Environment.Exit(1);
             }
         }, siteOption, environmentOption, verboseOption);
+
+        return command;
+    }
+
+    private static Command CreateNavigationCommand(ServiceProvider serviceProvider, ILogger<Program> logger,
+        Option<string> siteOption, Option<string> environmentOption, Option<bool> verboseOption)
+    {
+        var buildTemplatesOption = new Option<bool>(
+            aliases: new[] { "-b", "--buildtemplates" },
+            description: "Build navigation templates")
+        {
+            IsRequired = false
+        };
+
+        var command = new Command("navigation", "Manage navigation settings")
+        {
+            siteOption,
+            environmentOption,
+            verboseOption,
+            buildTemplatesOption
+        };
+
+        command.SetHandler(async (site, environment, verbose, buildTemplates) =>
+        {
+            // Create service provider with correct verbose setting
+            var services = new ServiceCollection();
+            ConfigureServices(services, verbose);
+            var verboseServiceProvider = services.BuildServiceProvider();
+            var verboseLogger = verboseServiceProvider.GetRequiredService<ILogger<Program>>();
+
+            var siteKitService = verboseServiceProvider.GetRequiredService<ISiteKitService>();
+
+            if (verbose)
+            {
+                verboseLogger.LogDebug("Verbose mode enabled");
+                verboseLogger.LogDebug($"Starting navigation for site: {site}, environment: {environment}, buildTemplates: {buildTemplates}");
+            }
+
+            try
+            {
+                await siteKitService.NavigationAsync(site, environment, verbose, buildTemplates);
+                if (verbose)
+                {
+                    verboseLogger.LogInformation("Navigation Finished");
+                }
+            }
+            catch (Exception ex)
+            {
+                verboseLogger.LogError(ex, "Navigation failed");
+                Environment.Exit(1);
+            }
+        }, siteOption, environmentOption, verboseOption, buildTemplatesOption);
 
         return command;
     }
