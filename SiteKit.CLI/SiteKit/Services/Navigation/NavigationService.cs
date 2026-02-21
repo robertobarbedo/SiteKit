@@ -6,7 +6,7 @@ namespace SiteKit.CLI.Services.Navigation;
 
 public interface INavigationService
 {
-    Task NavigationAsync(string siteName, string environment, bool verbose, bool buildTemplates);
+    Task NavigationAsync(string siteName, string environment, bool verbose);
 }
 
 public class NavigationService : BaseService, INavigationService
@@ -16,7 +16,7 @@ public class NavigationService : BaseService, INavigationService
     {
     }
 
-    public async Task NavigationAsync(string siteName, string environment, bool verbose, bool buildTemplates)
+    public async Task NavigationAsync(string siteName, string environment, bool verbose)
     {
         var dir = Directory.GetCurrentDirectory();
         string accessToken = await GetAccessTokenAsync(dir, verbose);
@@ -33,24 +33,28 @@ public class NavigationService : BaseService, INavigationService
         new _ReadYaml().Run(args);
         new _LoadYaml().Run(args);
 
-        if (buildTemplates)
-        {
-            WaitAndWrite("Building navigation templates...");
-            new _BuildNavigationTemplates(graphQLService, _logger).Run(args);
-        }
+        WaitAndWrite("Building navigation templates...");
+        new _BuildNavigationTemplates(graphQLService, _logger).Run(args);
+        if (!args.IsValid) { ShowError(args); return; }
 
-        if (args.IsValid)
-        {
-            Console.WriteLine("Navigation execution successful.");
-        }
-        else
-        {
-            Console.WriteLine("Error:");
-            Console.WriteLine(args.ValidationMessage);
-        }
+        // Re-read YAML to pick up template IDs written by the previous step
+        new _ReadYaml().Run(args);
+        new _LoadYaml().Run(args);
+
+        WaitAndWrite("Creating Navigation Domain item...");
+        new _CreateNavigationDomain(graphQLService, _logger).Run(args);
+        if (!args.IsValid) { ShowError(args); return; }
+
+        Console.WriteLine("Navigation execution successful.");
     }
 
-    public void WaitAndWrite(string message)
+    private void ShowError(AutoArgs args)
+    {
+        Console.WriteLine("Error:");
+        Console.WriteLine(args.ValidationMessage);
+    }
+
+    private void WaitAndWrite(string message)
     {
         Console.WriteLine(message);
         Thread.Sleep(250);

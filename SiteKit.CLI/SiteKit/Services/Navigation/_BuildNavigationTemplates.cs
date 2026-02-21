@@ -38,8 +38,17 @@ public class _BuildNavigationTemplates : IRun
                 return;
             }
 
-            // Step 2: Create Menu template
-            var menuTemplateId = CreateMenuTemplate(args).Result;
+            // Step 2: Create Navigation Domain template
+            var navDomainTemplateId = CreateNavigationDomainTemplate(args, siteKitFolderId).Result;
+            if (string.IsNullOrEmpty(navDomainTemplateId))
+            {
+                args.IsValid = false;
+                args.ValidationMessage = "Failed to create Navigation Domain template";
+                return;
+            }
+
+            // Step 3: Create Menu template
+            var menuTemplateId = CreateMenuTemplate(args, siteKitFolderId).Result;
             if (string.IsNullOrEmpty(menuTemplateId))
             {
                 args.IsValid = false;
@@ -47,8 +56,8 @@ public class _BuildNavigationTemplates : IRun
                 return;
             }
 
-            // Step 3: Create Menu Item template
-            var menuItemTemplateId = CreateMenuItemTemplate(args).Result;
+            // Step 4: Create Menu Item template
+            var menuItemTemplateId = CreateMenuItemTemplate(args, siteKitFolderId).Result;
             if (string.IsNullOrEmpty(menuItemTemplateId))
             {
                 args.IsValid = false;
@@ -56,7 +65,16 @@ public class _BuildNavigationTemplates : IRun
                 return;
             }
 
-            // Step 4: Create Standard Values for Menu template
+            // Step 5: Create Standard Values for Navigation Domain template
+            var navDomainStdValuesId = CreateStandardValues(args, "Navigation Domain", navDomainTemplateId, SITEKIT_FOLDER_PATH).Result;
+            if (string.IsNullOrEmpty(navDomainStdValuesId))
+            {
+                args.IsValid = false;
+                args.ValidationMessage = "Failed to create Standard Values for Navigation Domain template";
+                return;
+            }
+
+            // Step 6: Create Standard Values for Menu template
             var menuStdValuesId = CreateStandardValues(args, "Menu", menuTemplateId, SITEKIT_FOLDER_PATH).Result;
             if (string.IsNullOrEmpty(menuStdValuesId))
             {
@@ -65,7 +83,7 @@ public class _BuildNavigationTemplates : IRun
                 return;
             }
 
-            // Step 5: Create Standard Values for Menu Item template
+            // Step 7: Create Standard Values for Menu Item template
             var menuItemStdValuesId = CreateStandardValues(args, "Menu Item", menuItemTemplateId, SITEKIT_FOLDER_PATH).Result;
             if (string.IsNullOrEmpty(menuItemStdValuesId))
             {
@@ -74,14 +92,21 @@ public class _BuildNavigationTemplates : IRun
                 return;
             }
 
-            // Step 6: Update __Masters field for both standard values
+            // Step 8: Set __Icon on template items
+            SetIconOnItem(args, navDomainTemplateId, "Office/32x32/navigate_subitems.png").Wait();
+            SetIconOnItem(args, menuTemplateId, "Office/32x32/list_style_bullets.png").Wait();
+            SetIconOnItem(args, menuItemTemplateId, "Office/32x32/navigate_minus.png").Wait();
+
+            // Step 9: Update __Masters field for standard values
+            UpdateMastersField(args, navDomainStdValuesId, menuTemplateId).Wait();
             UpdateMastersField(args, menuStdValuesId, menuItemTemplateId).Wait();
             UpdateMastersField(args, menuItemStdValuesId, menuItemTemplateId).Wait();
 
-            // Step 7: Update navigation.yaml with template IDs
-            UpdateNavigationYaml(args, menuTemplateId, menuItemTemplateId);
+            // Step 10: Update navigation.yaml with template IDs
+            UpdateNavigationYaml(args, navDomainTemplateId, menuTemplateId, menuItemTemplateId);
 
             _logger.LogInformation("✓ Navigation templates created successfully");
+            _logger.LogInformation($"  Navigation Domain Template ID: {navDomainTemplateId}");
             _logger.LogInformation($"  Menu Template ID: {menuTemplateId}");
             _logger.LogInformation($"  Menu Item Template ID: {menuItemTemplateId}");
         }
@@ -135,7 +160,48 @@ public class _BuildNavigationTemplates : IRun
         return siteKitFolderId;
     }
 
-    private async Task<string?> CreateMenuTemplate(AutoArgs args)
+    private async Task<string?> CreateNavigationDomainTemplate(AutoArgs args, string parentId)
+    {
+        var templatePath = $"{SITEKIT_FOLDER_PATH}/Navigation Domain";
+        _logger.LogDebug($"Checking if Navigation Domain template exists at: {templatePath}");
+
+        var existingTemplate = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, templatePath, verbose: true);
+        
+        if (existingTemplate != null)
+        {
+            _logger.LogInformation($"✓ Navigation Domain template already exists (ID: {existingTemplate.ItemId})");
+            return existingTemplate.ItemId;
+        }
+
+        _logger.LogInformation("Creating Navigation Domain template...");
+        
+        var templateResponse = await _graphQLService.CreateTemplateAsync(
+            args.Endpoint,
+            args.AccessToken,
+            "Navigation Domain",
+            parentId,
+            sections: null,
+            verbose: true);
+
+        if (templateResponse == null)
+        {
+            _logger.LogError("Failed to create Navigation Domain template");
+            return null;
+        }
+
+        var createdTemplate = await _graphQLService.GetItemByPathAsync(args.Endpoint, args.AccessToken, templatePath, verbose: true);
+        
+        if (createdTemplate == null)
+        {
+            _logger.LogError($"Failed to retrieve created Navigation Domain template at path: {templatePath}");
+            return null;
+        }
+
+        _logger.LogInformation($"✓ Created Navigation Domain template (ID: {createdTemplate.ItemId})");
+        return createdTemplate.ItemId;
+    }
+
+    private async Task<string?> CreateMenuTemplate(AutoArgs args, string parentId)
     {
         var templatePath = $"{SITEKIT_FOLDER_PATH}/Menu";
         _logger.LogDebug($"Checking if Menu template exists at: {templatePath}");
@@ -156,8 +222,8 @@ public class _BuildNavigationTemplates : IRun
             args.Endpoint,
             args.AccessToken,
             "Menu",
-            SITEKIT_FOLDER_PATH,
-            sections: null, // No fields for Menu template
+            parentId,
+            sections: null,
             verbose: true);
 
         if (templateResponse == null)
@@ -179,7 +245,7 @@ public class _BuildNavigationTemplates : IRun
         return createdTemplate.ItemId;
     }
 
-    private async Task<string?> CreateMenuItemTemplate(AutoArgs args)
+    private async Task<string?> CreateMenuItemTemplate(AutoArgs args, string parentId)
     {
         var templatePath = $"{SITEKIT_FOLDER_PATH}/Menu Item";
         _logger.LogDebug($"Checking if Menu Item template exists at: {templatePath}");
@@ -213,7 +279,7 @@ public class _BuildNavigationTemplates : IRun
             args.Endpoint,
             args.AccessToken,
             "Menu Item",
-            SITEKIT_FOLDER_PATH,
+            parentId,
             sections: sections,
             verbose: true);
 
@@ -279,6 +345,32 @@ public class _BuildNavigationTemplates : IRun
         return standardValuesId;
     }
 
+    private async Task SetIconOnItem(AutoArgs args, string itemId, string icon)
+    {
+        _logger.LogDebug($"Setting __Icon for item: {itemId}");
+
+        var fields = new Dictionary<string, string>
+        {
+            ["__Icon"] = icon
+        };
+
+        var updateResult = await _graphQLService.UpdateItemAsync(
+            args.Endpoint,
+            args.AccessToken,
+            itemId,
+            fields,
+            verbose: true);
+
+        if (updateResult != null)
+        {
+            _logger.LogDebug($"✓ Set __Icon for item: {itemId}");
+        }
+        else
+        {
+            _logger.LogWarning($"Failed to set __Icon for item: {itemId}");
+        }
+    }
+
     private async Task UpdateMastersField(AutoArgs args, string standardValuesId, string menuItemTemplateId)
     {
         _logger.LogDebug($"Updating __Masters field for standard values: {standardValuesId}");
@@ -305,7 +397,7 @@ public class _BuildNavigationTemplates : IRun
         }
     }
 
-    private void UpdateNavigationYaml(AutoArgs args, string menuTemplateId, string menuItemTemplateId)
+    private void UpdateNavigationYaml(AutoArgs args, string navDomainTemplateId, string menuTemplateId, string menuItemTemplateId)
     {
         try
         {
@@ -337,6 +429,7 @@ public class _BuildNavigationTemplates : IRun
             }
 
             // Update the template IDs
+            navigationConfig.Navigation.Templates.NavigationDomain = navDomainTemplateId;
             navigationConfig.Navigation.Templates.Menu = menuTemplateId;
             navigationConfig.Navigation.Templates.MenuItem = menuItemTemplateId;
 

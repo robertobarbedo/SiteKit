@@ -14,19 +14,22 @@
         "templates": {
           "type": "object",
           "description": "Template IDs for navigation items",
-          "required": ["menu", "menuitem"],
+          "required": ["navigation_domain", "menu", "menuitem"],
           "properties": {
+            "navigation_domain": {
+              "type": "string",
+              "description": "Template ID for navigation domain container",
+              "examples": ["", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
+            },
             "menu": {
               "type": "string",
               "description": "Template ID for menu container",
-              "minLength": 1,
-              "examples": ["111", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
+              "examples": ["", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
             },
             "menuitem": {
               "type": "string",
               "description": "Template ID for menu item",
-              "minLength": 1,
-              "examples": ["11111", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
+              "examples": ["", "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"]
             }
           },
           "additionalProperties": false

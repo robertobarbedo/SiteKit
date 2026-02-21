@@ -242,22 +242,14 @@ public class Program
     private static Command CreateNavigationCommand(ServiceProvider serviceProvider, ILogger<Program> logger,
         Option<string> siteOption, Option<string> environmentOption, Option<bool> verboseOption)
     {
-        var buildTemplatesOption = new Option<bool>(
-            aliases: new[] { "-b", "--buildtemplates" },
-            description: "Build navigation templates")
-        {
-            IsRequired = false
-        };
-
         var command = new Command("navigation", "Manage navigation settings")
         {
             siteOption,
             environmentOption,
-            verboseOption,
-            buildTemplatesOption
+            verboseOption
         };
 
-        command.SetHandler(async (site, environment, verbose, buildTemplates) =>
+        command.SetHandler(async (site, environment, verbose) =>
         {
             // Create service provider with correct verbose setting
             var services = new ServiceCollection();
@@ -270,12 +262,12 @@ public class Program
             if (verbose)
             {
                 verboseLogger.LogDebug("Verbose mode enabled");
-                verboseLogger.LogDebug($"Starting navigation for site: {site}, environment: {environment}, buildTemplates: {buildTemplates}");
+                verboseLogger.LogDebug($"Starting navigation for site: {site}, environment: {environment}");
             }
 
             try
             {
-                await siteKitService.NavigationAsync(site, environment, verbose, buildTemplates);
+                await siteKitService.NavigationAsync(site, environment, verbose);
                 if (verbose)
                 {
                     verboseLogger.LogInformation("Navigation Finished");
@@ -286,7 +278,7 @@ public class Program
                 verboseLogger.LogError(ex, "Navigation failed");
                 Environment.Exit(1);
             }
-        }, siteOption, environmentOption, verboseOption, buildTemplatesOption);
+        }, siteOption, environmentOption, verboseOption);
 
         return command;
     }
